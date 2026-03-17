@@ -1,0 +1,1659 @@
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🌸 Fragrance Master</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fragrances">
+<meta name="theme-color" content="#0f0a0d">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&amp;family=DM+Sans:wght@300;400;500&amp;display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0a0d;
+    --surface: #1a1118;
+    --card: #221520;
+    --border: #3a2535;
+    --accent: #e8a0c0;
+    --accent2: #c97aab;
+    --gold: #d4a76a;
+    --text: #f0e8ec;
+    --muted: #9a7f8a;
+    --top-color: #f4c2d0;
+    --mid-color: #c8a0e8;
+    --base-color: #a0c4e8;
+    --tag-bg: #2e1f2a;
+    --pill-active: #e8a0c0;
+    --pill-active-text: #0f0a0d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+    touch-action: manipulation;
+    overflow-x: hidden;
+  }
+
+  /* Subtle grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    -webkit-pointer-events: none;
+    z-index: -1;
+    opacity: 0.5;
+  }
+
+  /* HEADER */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(15,10,13,0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px 12px;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-style: italic;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+
+  .logo span { color: var(--gold); font-style: normal; }
+
+  .count-badge {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--tag-bg);
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  /* SEARCH */
+  .search-wrap {
+    position: relative;
+    margin-bottom: 10px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 16px;
+    pointer-events: none;
+  }
+
+  .search-input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    padding: 10px 36px 10px 38px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-input::placeholder { color: var(--muted); }
+  .search-input:focus { border-color: var(--accent2); }
+
+  .search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--border);
+    border: none;
+    color: var(--muted);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 13px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .search-clear.visible { display: flex; }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .tab {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--pill-active-text);
+  }
+
+  /* FILTERS */
+  .filters-section { margin-bottom: 6px; }
+
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    margin-bottom: 4px;
+  }
+
+  .filter-row::-webkit-scrollbar { display: none; }
+
+  .filter-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 5px;
+  }
+
+  .pill {
+    flex-shrink: 0;
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .pill:hover { border-color: var(--accent2); color: var(--text); }
+
+  .pill.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--pill-active-text);
+    font-weight: 600;
+  }
+
+  /* NOTE SEARCH PANEL */
+  .note-search-panel {
+    padding: 0 16px 8px;
+  }
+
+  .note-search-panel.hidden { display: none; }
+
+  .note-layer-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .layer-tab {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 7px 4px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .layer-tab.active-top { background: var(--top-color); border-color: var(--top-color); color: #1a0a12; }
+  .layer-tab.active-mid { background: var(--mid-color); border-color: var(--mid-color); color: #1a0a12; }
+  .layer-tab.active-base { background: var(--base-color); border-color: var(--base-color); color: #0a1a20; }
+
+  .note-search-input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 9px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 8px;
+  }
+
+  .note-search-input:focus { border-color: var(--accent2); }
+
+  .note-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-height: 100px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .note-chip {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .note-chip:hover, .note-chip.selected {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    color: #0f0a0d;
+  }
+
+  /* RESULTS */
+  .results-area {
+    padding: 12px 16px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .results-info {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-style: italic;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.15s;
+    cursor: pointer;
+  }
+
+  .card:active { transform: scale(0.985); }
+  .card.expanded { border-color: var(--accent2); }
+
+  .card-header {
+    padding: 14px 16px 12px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .card-main { flex: 1; min-width: 0; }
+
+  .card-brand {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 3px;
+  }
+
+  .card-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .tag {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 12px;
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .tag-gender-women { border-color: #c97aab44; color: #e8a0c0; }
+  .tag-gender-men { border-color: #7aabc944; color: #a0c4e8; }
+  .tag-gender-unisex { border-color: #aac97a44; color: #c4e8a0; }
+  .tag-type { border-color: var(--gold); color: var(--gold); opacity: 0.8; }
+
+  .card-chevron {
+    color: var(--muted);
+    font-size: 14px;
+    transition: transform 0.25s;
+    padding-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .card.expanded .card-chevron { transform: rotate(180deg); }
+
+  /* EXPANDED NOTES */
+  .card-notes {
+    display: none;
+    padding: 0 16px 14px;
+    border-top: 1px solid var(--border);
+    margin-top: 0;
+  }
+
+  .card.expanded .card-notes { display: block; }
+
+  .notes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    padding-top: 12px;
+  }
+
+  .note-group { }
+
+  .note-group-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .note-group-label.top { color: var(--top-color); }
+  .note-group-label.mid { color: var(--mid-color); }
+  .note-group-label.base { color: var(--base-color); }
+
+  .note-item {
+    font-size: 12px;
+    color: var(--text);
+    opacity: 0.85;
+    line-height: 1.6;
+  }
+
+  .note-item.highlight {
+    color: var(--accent);
+    font-weight: 600;
+    opacity: 1;
+  }
+
+  .card-meta {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+  }
+
+  .meta-item {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .meta-item span { color: var(--text); font-weight: 500; }
+
+  /* ADD FORM */
+  .add-form {
+    padding: 16px;
+    display: none;
+  }
+
+  .add-form.visible { display: block; }
+
+  .form-section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--accent);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .form-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .form-col { flex: 1; }
+
+  .form-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 5px;
+    display: block;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .form-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239a7f8a' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 30px; }
+  .form-select option { background: var(--surface); }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent2); }
+
+  .form-textarea { resize: none; height: 72px; line-height: 1.5; }
+
+  .notes-helper {
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 6px;
+  }
+
+  .save-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    border: none;
+    border-radius: 12px;
+    color: #0f0a0d;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 13px;
+    cursor: pointer;
+    margin-top: 8px;
+    letter-spacing: 0.02em;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  .save-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--accent);
+    color: #0f0a0d;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 24px;
+    border-radius: 24px;
+    z-index: 999;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-text { font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic; margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; }
+
+  /* BOTTOM NAV-LIKE PADDING */
+  .bottom-spacer { height: 20px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">Fragrance <span>✦</span> Master</div>
+    <div class="count-badge" id="countBadge">283 fragrances</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" onclick="switchMode('browse')" id="tab-browse">🔍 Browse</button>
+    <button class="tab" onclick="switchMode('notes')" id="tab-notes">🌿 By Notes</button>
+    <button class="tab" onclick="switchMode('add')" id="tab-add">＋ Add</button>
+  </div>
+
+  <div id="browse-controls" style="display: none;">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" type="search" placeholder="Search brand, name, or note…" oninput="onSearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+    </div>
+
+    <div class="filter-label">Filter</div>
+    <div class="filter-row" id="genderFilters">
+      <button class="pill active" onclick="toggleFilter('gender','all',this)">All</button>
+      <button class="pill" onclick="toggleFilter('gender','Women',this)">Women</button>
+      <button class="pill" onclick="toggleFilter('gender','Men',this)">Men</button>
+      <button class="pill" onclick="toggleFilter('gender','Unisex',this)">Unisex</button>
+    </div>
+    <div class="filter-row" id="typeFilters">
+      <button class="pill active" onclick="toggleFilter('type','all',this)">All Types</button>
+      <button class="pill" onclick="toggleFilter('type','Edt',this)">EDT</button>
+      <button class="pill" onclick="toggleFilter('type','Edp',this)">EDP</button>
+      <button class="pill" onclick="toggleFilter('type','Parfum',this)">Parfum</button>
+      <button class="pill" onclick="toggleFilter('type','Body Mist',this)">Body Mist</button>
+      <button class="pill" onclick="toggleFilter('type','Cologne',this)">Cologne</button>
+      <button class="pill" onclick="toggleFilter('type','Parfum Intense',this)">Parfum Intense</button>
+      <button class="pill" onclick="toggleFilter('type','Elixir',this)">Elixir</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE SEARCH PANEL -->
+<div class="note-search-panel hidden" id="notePanel">
+  <div class="note-layer-tabs">
+    <button class="layer-tab active-top" id="ltTop" onclick="setLayer('top')">🌸 Top</button>
+    <button class="layer-tab" id="ltMid" onclick="setLayer('mid')">💐 Mid</button>
+    <button class="layer-tab" id="ltBase" onclick="setLayer('base')">🌿 Base</button>
+  </div>
+  <input class="note-search-input" id="noteSearchInput" type="text" placeholder="Type a note… (e.g. Rose, Vanilla)" oninput="onNoteSearchInput(this.value)" autocomplete="off">
+  <div class="note-suggestions" id="noteSuggestions"><div class="note-chip " onclick="selectNote('Absinthe Oil')">
+          Absinthe Oil
+        </div><div class="note-chip " onclick="selectNote('Agave')">
+          Agave
+        </div><div class="note-chip " onclick="selectNote('Almond')">
+          Almond
+        </div><div class="note-chip " onclick="selectNote('Almond Milk')">
+          Almond Milk
+        </div><div class="note-chip " onclick="selectNote('Amalfi Lemon')">
+          Amalfi Lemon
+        </div><div class="note-chip " onclick="selectNote('Amber')">
+          Amber
+        </div><div class="note-chip " onclick="selectNote('Amberwood')">
+          Amberwood
+        </div><div class="note-chip " onclick="selectNote('Ambrette')">
+          Ambrette
+        </div><div class="note-chip " onclick="selectNote('Ambrette (Musk Mallow)')">
+          Ambrette (Musk Mallow)
+        </div><div class="note-chip " onclick="selectNote('Ambrette Absolute')">
+          Ambrette Absolute
+        </div><div class="note-chip " onclick="selectNote('Anbrette (Musk Mallow)')">
+          Anbrette (Musk Mallow)
+        </div><div class="note-chip " onclick="selectNote('Angelica Root')">
+          Angelica Root
+        </div><div class="note-chip " onclick="selectNote('Apple')">
+          Apple
+        </div><div class="note-chip " onclick="selectNote('Apple Blossom')">
+          Apple Blossom
+        </div><div class="note-chip " onclick="selectNote('Apple Leaf')">
+          Apple Leaf
+        </div><div class="note-chip " onclick="selectNote('Aquatic Notes')">
+          Aquatic Notes
+        </div><div class="note-chip " onclick="selectNote('Artemisia')">
+          Artemisia
+        </div><div class="note-chip " onclick="selectNote('Australian Blue Cypress')">
+          Australian Blue Cypress
+        </div><div class="note-chip " onclick="selectNote('Bamboo')">
+          Bamboo
+        </div><div class="note-chip " onclick="selectNote('Basil')">
+          Basil
+        </div><div class="note-chip " onclick="selectNote('Bayleaf')">
+          Bayleaf
+        </div><div class="note-chip " onclick="selectNote('Bellflower')">
+          Bellflower
+        </div><div class="note-chip " onclick="selectNote('Bergamot')">
+          Bergamot
+        </div><div class="note-chip " onclick="selectNote('Bitter Almond')">
+          Bitter Almond
+        </div><div class="note-chip " onclick="selectNote('Bitter Orange')">
+          Bitter Orange
+        </div><div class="note-chip " onclick="selectNote('Black Cherry')">
+          Black Cherry
+        </div><div class="note-chip " onclick="selectNote('Black Currant')">
+          Black Currant
+        </div><div class="note-chip " onclick="selectNote('Black Pepper')">
+          Black Pepper
+        </div><div class="note-chip " onclick="selectNote('Blackberry')">
+          Blackberry
+        </div><div class="note-chip " onclick="selectNote('Blackcurrant')">
+          Blackcurrant
+        </div><div class="note-chip " onclick="selectNote('Blood Grapefruit')">
+          Blood Grapefruit
+        </div><div class="note-chip " onclick="selectNote('Blood Mandarin')">
+          Blood Mandarin
+        </div><div class="note-chip " onclick="selectNote('Blood Orange')">
+          Blood Orange
+        </div><div class="note-chip " onclick="selectNote('Blueberry')">
+          Blueberry
+        </div><div class="note-chip " onclick="selectNote('Brazilian Rosewood')">
+          Brazilian Rosewood
+        </div><div class="note-chip " onclick="selectNote('Brown Sugar')">
+          Brown Sugar
+        </div><div class="note-chip " onclick="selectNote('Cacao')">
+          Cacao
+        </div><div class="note-chip " onclick="selectNote('Calabrian Bergamot')">
+          Calabrian Bergamot
+        </div><div class="note-chip " onclick="selectNote('Calone')">
+          Calone
+        </div><div class="note-chip " onclick="selectNote('Calypsone')">
+          Calypsone
+        </div><div class="note-chip " onclick="selectNote('Candied Ginger')">
+          Candied Ginger
+        </div><div class="note-chip " onclick="selectNote('Candied Lemon')">
+          Candied Lemon
+        </div><div class="note-chip " onclick="selectNote('Cappuchino')">
+          Cappuchino
+        </div><div class="note-chip " onclick="selectNote('Carambola (Star Fruit)')">
+          Carambola (Star Fruit)
+        </div><div class="note-chip " onclick="selectNote('Caramel')">
+          Caramel
+        </div><div class="note-chip " onclick="selectNote('Cardamom')">
+          Cardamom
+        </div><div class="note-chip " onclick="selectNote('Carnation')">
+          Carnation
+        </div><div class="note-chip " onclick="selectNote('Cassia')">
+          Cassia
+        </div><div class="note-chip " onclick="selectNote('Cassis')">
+          Cassis
+        </div><div class="note-chip " onclick="selectNote('Cedar')">
+          Cedar
+        </div><div class="note-chip " onclick="selectNote('Cedar Needles')">
+          Cedar Needles
+        </div><div class="note-chip " onclick="selectNote('Chamomile')">
+          Chamomile
+        </div><div class="note-chip " onclick="selectNote('Cherry')">
+          Cherry
+        </div><div class="note-chip " onclick="selectNote('Chinotto')">
+          Chinotto
+        </div><div class="note-chip " onclick="selectNote('Chocolate')">
+          Chocolate
+        </div><div class="note-chip " onclick="selectNote('Cinnamon')">
+          Cinnamon
+        </div><div class="note-chip " onclick="selectNote('Citron')">
+          Citron
+        </div><div class="note-chip " onclick="selectNote('Citrus')">
+          Citrus
+        </div><div class="note-chip " onclick="selectNote('Clary Sage')">
+          Clary Sage
+        </div><div class="note-chip " onclick="selectNote('Clementine')">
+          Clementine
+        </div><div class="note-chip " onclick="selectNote('Cloudberry')">
+          Cloudberry
+        </div><div class="note-chip " onclick="selectNote('Clove')">
+          Clove
+        </div><div class="note-chip " onclick="selectNote('Clover')">
+          Clover
+        </div><div class="note-chip " onclick="selectNote('Cocoa')">
+          Cocoa
+        </div><div class="note-chip " onclick="selectNote('Coconut')">
+          Coconut
+        </div><div class="note-chip " onclick="selectNote('Coconut Water')">
+          Coconut Water
+        </div><div class="note-chip " onclick="selectNote('Coffee')">
+          Coffee
+        </div><div class="note-chip " onclick="selectNote('Coriander')">
+          Coriander
+        </div><div class="note-chip " onclick="selectNote('Cranberry')">
+          Cranberry
+        </div><div class="note-chip " onclick="selectNote('Cucumber')">
+          Cucumber
+        </div><div class="note-chip " onclick="selectNote('Cyclamen')">
+          Cyclamen
+        </div><div class="note-chip " onclick="selectNote('Cypress')">
+          Cypress
+        </div><div class="note-chip " onclick="selectNote('Davana')">
+          Davana
+        </div><div class="note-chip " onclick="selectNote('Dragon Fruit')">
+          Dragon Fruit
+        </div><div class="note-chip " onclick="selectNote('Elemi')">
+          Elemi
+        </div><div class="note-chip " onclick="selectNote('Espresso')">
+          Espresso
+        </div><div class="note-chip " onclick="selectNote('Eucalyptus')">
+          Eucalyptus
+        </div><div class="note-chip " onclick="selectNote('Fig')">
+          Fig
+        </div><div class="note-chip " onclick="selectNote('Fig Leaf')">
+          Fig Leaf
+        </div><div class="note-chip " onclick="selectNote('Finger Lime')">
+          Finger Lime
+        </div><div class="note-chip " onclick="selectNote('Forget-me-not')">
+          Forget-me-not
+        </div><div class="note-chip " onclick="selectNote('Frangipani')">
+          Frangipani
+        </div><div class="note-chip " onclick="selectNote('Freesia')">
+          Freesia
+        </div><div class="note-chip " onclick="selectNote('Fruits')">
+          Fruits
+        </div><div class="note-chip " onclick="selectNote('Ginger')">
+          Ginger
+        </div><div class="note-chip " onclick="selectNote('Granny Smith Apple')">
+          Granny Smith Apple
+        </div><div class="note-chip " onclick="selectNote('Grapefruit')">
+          Grapefruit
+        </div><div class="note-chip " onclick="selectNote('Green Accord')">
+          Green Accord
+        </div><div class="note-chip " onclick="selectNote('Green Apple')">
+          Green Apple
+        </div><div class="note-chip " onclick="selectNote('Green Coconut')">
+          Green Coconut
+        </div><div class="note-chip " onclick="selectNote('Green Leaves')">
+          Green Leaves
+        </div><div class="note-chip " onclick="selectNote('Green Mandarin')">
+          Green Mandarin
+        </div><div class="note-chip " onclick="selectNote('Green Notes')">
+          Green Notes
+        </div><div class="note-chip " onclick="selectNote('Green Pear')">
+          Green Pear
+        </div><div class="note-chip " onclick="selectNote('Green Tea')">
+          Green Tea
+        </div><div class="note-chip " onclick="selectNote('Hazelnut')">
+          Hazelnut
+        </div><div class="note-chip " onclick="selectNote('Hibiscus')">
+          Hibiscus
+        </div><div class="note-chip " onclick="selectNote('Honeysuckle')">
+          Honeysuckle
+        </div><div class="note-chip " onclick="selectNote('Ice')">
+          Ice
+        </div><div class="note-chip " onclick="selectNote('Incense')">
+          Incense
+        </div><div class="note-chip " onclick="selectNote('Italian Lemon')">
+          Italian Lemon
+        </div><div class="note-chip " onclick="selectNote('Italian Mandarin')">
+          Italian Mandarin
+        </div><div class="note-chip " onclick="selectNote('Italian Tangerine')">
+          Italian Tangerine
+        </div><div class="note-chip " onclick="selectNote('Jasmine')">
+          Jasmine
+        </div><div class="note-chip " onclick="selectNote('Jasmine Absolute')">
+          Jasmine Absolute
+        </div><div class="note-chip " onclick="selectNote('Juicy Pear')">
+          Juicy Pear
+        </div><div class="note-chip " onclick="selectNote('Juniper')">
+          Juniper
+        </div><div class="note-chip " onclick="selectNote('Juniper Berries')">
+          Juniper Berries
+        </div><div class="note-chip " onclick="selectNote('Kiwi Accord')">
+          Kiwi Accord
+        </div><div class="note-chip " onclick="selectNote('Kumquat')">
+          Kumquat
+        </div><div class="note-chip " onclick="selectNote('Lavendar')">
+          Lavendar
+        </div><div class="note-chip " onclick="selectNote('Lavender')">
+          Lavender
+        </div><div class="note-chip " onclick="selectNote('Lemon')">
+          Lemon
+        </div><div class="note-chip " onclick="selectNote('Lemon Verbena')">
+          Lemon Verbena
+        </div><div class="note-chip " onclick="selectNote('Lily')">
+          Lily
+        </div><div class="note-chip " onclick="selectNote('Lily-of-the-Valley')">
+          Lily-of-the-Valley
+        </div><div class="note-chip " onclick="selectNote('LilyBelle')">
+          LilyBelle
+        </div><div class="note-chip " onclick="selectNote('Lime')">
+          Lime
+        </div><div class="note-chip " onclick="selectNote('Lime Oil')">
+          Lime Oil
+        </div><div class="note-chip " onclick="selectNote('Litchi')">
+          Litchi
+        </div><div class="note-chip " onclick="selectNote('Lotus')">
+          Lotus
+        </div><div class="note-chip " onclick="selectNote('Lychee')">
+          Lychee
+        </div><div class="note-chip " onclick="selectNote('Magnolia')">
+          Magnolia
+        </div><div class="note-chip " onclick="selectNote('Mandarin')">
+          Mandarin
+        </div><div class="note-chip " onclick="selectNote('Mandarin Orange')">
+          Mandarin Orange
+        </div><div class="note-chip " onclick="selectNote('Mango')">
+          Mango
+        </div><div class="note-chip " onclick="selectNote('Marigold')">
+          Marigold
+        </div><div class="note-chip " onclick="selectNote('Marine Notes')">
+          Marine Notes
+        </div><div class="note-chip " onclick="selectNote('Marshmallow')">
+          Marshmallow
+        </div><div class="note-chip " onclick="selectNote('Melon')">
+          Melon
+        </div><div class="note-chip " onclick="selectNote('Mint')">
+          Mint
+        </div><div class="note-chip " onclick="selectNote('Mirabelle')">
+          Mirabelle
+        </div><div class="note-chip " onclick="selectNote('Mugwort')">
+          Mugwort
+        </div><div class="note-chip " onclick="selectNote('Musk')">
+          Musk
+        </div><div class="note-chip " onclick="selectNote('Nashi Pear')">
+          Nashi Pear
+        </div><div class="note-chip " onclick="selectNote('Nectarine')">
+          Nectarine
+        </div><div class="note-chip " onclick="selectNote('Neroli')">
+          Neroli
+        </div><div class="note-chip " onclick="selectNote('Not Found')">
+          Not Found
+        </div><div class="note-chip " onclick="selectNote('Nutmeg')">
+          Nutmeg
+        </div><div class="note-chip " onclick="selectNote('Orange')">
+          Orange
+        </div><div class="note-chip " onclick="selectNote('Orange Blossom')">
+          Orange Blossom
+        </div><div class="note-chip " onclick="selectNote('Osmanthus')">
+          Osmanthus
+        </div><div class="note-chip " onclick="selectNote('Ozonic Notes')">
+          Ozonic Notes
+        </div><div class="note-chip " onclick="selectNote('Papaya')">
+          Papaya
+        </div><div class="note-chip " onclick="selectNote('Passion Fruit')">
+          Passion Fruit
+        </div><div class="note-chip " onclick="selectNote('Passionfruit')">
+          Passionfruit
+        </div><div class="note-chip " onclick="selectNote('Patchouli')">
+          Patchouli
+        </div><div class="note-chip " onclick="selectNote('Peach')">
+          Peach
+        </div><div class="note-chip " onclick="selectNote('Pear')">
+          Pear
+        </div><div class="note-chip " onclick="selectNote('Pear Blossom')">
+          Pear Blossom
+        </div><div class="note-chip " onclick="selectNote('Pear Leaf')">
+          Pear Leaf
+        </div><div class="note-chip " onclick="selectNote('Peat')">
+          Peat
+        </div><div class="note-chip " onclick="selectNote('Peony')">
+          Peony
+        </div><div class="note-chip " onclick="selectNote('Pepper')">
+          Pepper
+        </div><div class="note-chip " onclick="selectNote('Persimmon')">
+          Persimmon
+        </div><div class="note-chip " onclick="selectNote('Petitgrain')">
+          Petitgrain
+        </div><div class="note-chip " onclick="selectNote('Pimento')">
+          Pimento
+        </div><div class="note-chip " onclick="selectNote('Pimento Leaf')">
+          Pimento Leaf
+        </div><div class="note-chip " onclick="selectNote('Pine')">
+          Pine
+        </div><div class="note-chip " onclick="selectNote('Pineapple')">
+          Pineapple
+        </div><div class="note-chip " onclick="selectNote('Pineapple Leaf')">
+          Pineapple Leaf
+        </div><div class="note-chip " onclick="selectNote('Pink Freesia')">
+          Pink Freesia
+        </div><div class="note-chip " onclick="selectNote('Pink Grapefruit')">
+          Pink Grapefruit
+        </div><div class="note-chip " onclick="selectNote('Pink Litchi')">
+          Pink Litchi
+        </div><div class="note-chip " onclick="selectNote('Pink Pepper')">
+          Pink Pepper
+        </div><div class="note-chip " onclick="selectNote('Pink Peppercorn')">
+          Pink Peppercorn
+        </div><div class="note-chip " onclick="selectNote('Pitahaya')">
+          Pitahaya
+        </div><div class="note-chip " onclick="selectNote('Plum')">
+          Plum
+        </div><div class="note-chip " onclick="selectNote('Plum Blossom')">
+          Plum Blossom
+        </div><div class="note-chip " onclick="selectNote('Pomegranate')">
+          Pomegranate
+        </div><div class="note-chip " onclick="selectNote('Pomelo')">
+          Pomelo
+        </div><div class="note-chip " onclick="selectNote('Prickly Pear')">
+          Prickly Pear
+        </div><div class="note-chip " onclick="selectNote('Punch')">
+          Punch
+        </div><div class="note-chip " onclick="selectNote('Quince')">
+          Quince
+        </div><div class="note-chip " onclick="selectNote('Raspberry')">
+          Raspberry
+        </div><div class="note-chip " onclick="selectNote('Raspberry Leaf')">
+          Raspberry Leaf
+        </div><div class="note-chip " onclick="selectNote('Red Apple')">
+          Red Apple
+        </div><div class="note-chip " onclick="selectNote('Red Berries')">
+          Red Berries
+        </div><div class="note-chip " onclick="selectNote('Red Currant')">
+          Red Currant
+        </div><div class="note-chip " onclick="selectNote('Red Fruits')">
+          Red Fruits
+        </div><div class="note-chip " onclick="selectNote('Red Thyme')">
+          Red Thyme
+        </div><div class="note-chip " onclick="selectNote('Redcurrant')">
+          Redcurrant
+        </div><div class="note-chip " onclick="selectNote('Rhubarb')">
+          Rhubarb
+        </div><div class="note-chip " onclick="selectNote('Rose')">
+          Rose
+        </div><div class="note-chip " onclick="selectNote('Rose Oxide')">
+          Rose Oxide
+        </div><div class="note-chip " onclick="selectNote('Rose de Mai')">
+          Rose de Mai
+        </div><div class="note-chip " onclick="selectNote('Rosemary')">
+          Rosemary
+        </div><div class="note-chip " onclick="selectNote('Saffron')">
+          Saffron
+        </div><div class="note-chip " onclick="selectNote('Sage')">
+          Sage
+        </div><div class="note-chip " onclick="selectNote('Salt')">
+          Salt
+        </div><div class="note-chip " onclick="selectNote('Sea Notes')">
+          Sea Notes
+        </div><div class="note-chip " onclick="selectNote('Sea Water')">
+          Sea Water
+        </div><div class="note-chip " onclick="selectNote('Shiso')">
+          Shiso
+        </div><div class="note-chip " onclick="selectNote('Sichuan Pepper')">
+          Sichuan Pepper
+        </div><div class="note-chip " onclick="selectNote('Sicilian Bergamot')">
+          Sicilian Bergamot
+        </div><div class="note-chip " onclick="selectNote('Sicilian Lemon')">
+          Sicilian Lemon
+        </div><div class="note-chip " onclick="selectNote('Smoke')">
+          Smoke
+        </div><div class="note-chip " onclick="selectNote('Solar Notes')">
+          Solar Notes
+        </div><div class="note-chip " onclick="selectNote('Sorbet')">
+          Sorbet
+        </div><div class="note-chip " onclick="selectNote('Sour Cherry')">
+          Sour Cherry
+        </div><div class="note-chip " onclick="selectNote('Spearmint')">
+          Spearmint
+        </div><div class="note-chip " onclick="selectNote('Star Anise')">
+          Star Anise
+        </div><div class="note-chip " onclick="selectNote('Strawberry')">
+          Strawberry
+        </div><div class="note-chip " onclick="selectNote('Sugar')">
+          Sugar
+        </div><div class="note-chip " onclick="selectNote('Sweet Orange')">
+          Sweet Orange
+        </div><div class="note-chip " onclick="selectNote('Tangerine')">
+          Tangerine
+        </div><div class="note-chip " onclick="selectNote('Tea')">
+          Tea
+        </div><div class="note-chip " onclick="selectNote('Thyme')">
+          Thyme
+        </div><div class="note-chip " onclick="selectNote('Tomato Leaf')">
+          Tomato Leaf
+        </div><div class="note-chip " onclick="selectNote('Tonka')">
+          Tonka
+        </div><div class="note-chip " onclick="selectNote('Tonka Bean')">
+          Tonka Bean
+        </div><div class="note-chip " onclick="selectNote('Turkish Rose')">
+          Turkish Rose
+        </div><div class="note-chip " onclick="selectNote('Vanilla')">
+          Vanilla
+        </div><div class="note-chip " onclick="selectNote('Violet')">
+          Violet
+        </div><div class="note-chip " onclick="selectNote('Violet Leaf')">
+          Violet Leaf
+        </div><div class="note-chip " onclick="selectNote('Water Notes')">
+          Water Notes
+        </div><div class="note-chip " onclick="selectNote('Watermelon')">
+          Watermelon
+        </div><div class="note-chip " onclick="selectNote('White Musk')">
+          White Musk
+        </div><div class="note-chip " onclick="selectNote('White Pepper')">
+          White Pepper
+        </div><div class="note-chip " onclick="selectNote('Wild Berries')">
+          Wild Berries
+        </div><div class="note-chip " onclick="selectNote('Wild Strawberry')">
+          Wild Strawberry
+        </div><div class="note-chip " onclick="selectNote('Wormwood')">
+          Wormwood
+        </div><div class="note-chip " onclick="selectNote('Yellow Freesia')">
+          Yellow Freesia
+        </div><div class="note-chip " onclick="selectNote('Ylang Ylang')">
+          Ylang Ylang
+        </div><div class="note-chip " onclick="selectNote('Yuzu')">
+          Yuzu
+        </div><div class="note-chip " onclick="selectNote('Zefir')">
+          Zefir
+        </div></div>
+</div>
+
+<!-- RESULTS / ADD AREA -->
+<div class="results-area" id="resultsArea" style="display: none;">
+  <div class="results-info" id="resultsInfo">Showing 20 of 283</div>
+  <div id="cardList"><div class="card " onclick="toggleCard(0)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Adidas</div>
+        <div class="card-name">Moves</div>
+        <div class="card-tags"><span class="tag tag-gender-men">Men</span><span class="tag tag-type">Edt</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(1)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Adidas</div>
+        <div class="card-name">Moves for Her</div>
+        <div class="card-tags"><span class="tag tag-gender-women">Women</span><span class="tag tag-type">Edt</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(2)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Anna Sui</div>
+        <div class="card-name">Cosmic Sky</div>
+        <div class="card-tags"><span class="tag tag-gender-women">Women</span><span class="tag tag-type">Edt</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(3)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Anna Sui</div>
+        <div class="card-name">Fantasia</div>
+        <div class="card-tags"><span class="tag tag-gender-women">Women</span><span class="tag tag-type">Edt</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(4)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Ariana Grande</div>
+        <div class="card-name">Cloud</div>
+        <div class="card-tags"><span class="tag tag-gender-women">Women</span><span class="tag tag-type">Edp</span><span class="tag">Floral Fruity Gourmand</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(5)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Ariana Grande</div>
+        <div class="card-name">MOD Vanilla</div>
+        <div class="card-tags"><span class="tag tag-gender-women">Women</span><span class="tag tag-type">Edp</span><span class="tag">Oriental Vanilla</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(6)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Ariana Grande</div>
+        <div class="card-name">Sweet Like Candy</div>
+        <div class="card-tags"><span class="tag tag-gender-women">Women</span><span class="tag tag-type">Edp</span><span class="tag">Floral Fruity Gourmand</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(7)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Ariana Grande</div>
+        <div class="card-name">Thank U Next</div>
+        <div class="card-tags"><span class="tag tag-gender-women">Women</span><span class="tag tag-type">Edp</span><span class="tag">Floral Fruity Gourmand</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(8)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Ariana Grande</div>
+        <div class="card-name">Moonlight</div>
+        <div class="card-tags"><span class="tag tag-gender-women">Women</span><span class="tag tag-type">Edp</span><span class="tag">Floral Fruity</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(9)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Ariana Grande</div>
+        <div class="card-name">Ari</div>
+        <div class="card-tags"><span class="tag tag-gender-women">Women</span><span class="tag tag-type">Edp</span><span class="tag">Floral Fruity Gourmand</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(10)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Ariana Grande</div>
+        <div class="card-name">Cloud Pink</div>
+        <div class="card-tags"><span class="tag tag-gender-women">Women</span><span class="tag tag-type">Edp</span><span class="tag">Oriental Vanilla</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(11)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Ariana Grande</div>
+        <div class="card-name">MOD Blush</div>
+        <div class="card-tags"><span class="tag tag-gender-women">Women</span><span class="tag tag-type">Edp</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(12)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Ariana Grande</div>
+        <div class="card-name">God is a Woman</div>
+        <div class="card-tags"><span class="tag tag-gender-women">Women</span><span class="tag tag-type">Edp</span><span class="tag">Oriental Floral</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(13)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Ariana Grande</div>
+        <div class="card-name">R.E.M. Cherry Eclipse</div>
+        <div class="card-tags"><span class="tag tag-gender-women">Women</span><span class="tag tag-type">Edp</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(14)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Ariana Grande</div>
+        <div class="card-name">R.E.M.</div>
+        <div class="card-tags"><span class="tag tag-gender-women">Women</span><span class="tag tag-type">Edp</span><span class="tag">Oriental Vanilla</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(15)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Ariana Grande</div>
+        <div class="card-name">LOVENOTES Pink Woods</div>
+        <div class="card-tags"><span class="tag tag-gender-women">Women</span><span class="tag tag-type">Edp</span><span class="tag">Woody</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(16)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Azzaro</div>
+        <div class="card-name">Chrome</div>
+        <div class="card-tags"><span class="tag tag-gender-men">Men</span><span class="tag tag-type">Edt</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(17)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Azzaro</div>
+        <div class="card-name">Chrome Eau de Parfum</div>
+        <div class="card-tags"><span class="tag tag-gender-men">Men</span><span class="tag tag-type">Edp</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(18)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Azzaro</div>
+        <div class="card-name">Chrome Parfum</div>
+        <div class="card-tags"><span class="tag tag-gender-men">Men</span><span class="tag tag-type">Parfum</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div><div class="card " onclick="toggleCard(19)">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">Azzaro</div>
+        <div class="card-name">Chrome Azure</div>
+        <div class="card-tags"><span class="tag tag-gender-men">Men</span><span class="tag tag-type">Edt</span></div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    
+  </div></div>
+  <button id="loadMoreBtn" onclick="loadMore()" style="display:none; width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 12px; color: var(--accent); font-family: &quot;DM Sans&quot;, sans-serif; font-size: 14px; font-weight: 500; padding: 12px; cursor: pointer; margin-top: 4px;">Load More (263 remaining)</button>
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="empty-icon">🌸</div>
+    <div class="empty-text">No fragrances found</div>
+    <div class="empty-sub">Try a different search or filter</div>
+  </div>
+</div>
+
+<!-- ADD FORM -->
+<div class="add-form visible" id="addForm">
+  <div class="form-section-title">Add a New Fragrance</div>
+  <div class="form-row">
+    <div class="form-col">
+      <label class="form-label">Brand</label>
+      <input class="form-input" id="fBrand" type="text" placeholder="e.g. Dior">
+    </div>
+    <div class="form-col">
+      <label class="form-label">Name</label>
+      <input class="form-input" id="fName" type="text" placeholder="e.g. Miss Dior">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-col">
+      <label class="form-label">Gender</label>
+      <select class="form-select" id="fGender">
+        <option>Women</option><option>Men</option><option>Unisex</option>
+      </select>
+    </div>
+    <div class="form-col">
+      <label class="form-label">Type</label>
+      <select class="form-select" id="fType">
+        <option>Edt</option><option>Edp</option><option>Parfum</option><option>Cologne</option><option>Body Mist</option><option>Elixir</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-col">
+      <label class="form-label">Family</label>
+      <input class="form-input" id="fFamily" type="text" placeholder="e.g. Floral Woody Musk">
+    </div>
+    <div class="form-col">
+      <label class="form-label">Launched</label>
+      <input class="form-input" id="fLaunched" type="text" placeholder="e.g. 2023">
+    </div>
+  </div>
+  <p class="notes-helper">Enter notes separated by commas</p>
+  <div style="margin-bottom:10px">
+    <label class="form-label">🌸 Top Notes</label>
+    <textarea class="form-textarea" id="fTop" placeholder="Bergamot, Lemon, Pink Pepper…"></textarea>
+  </div>
+  <div style="margin-bottom:10px">
+    <label class="form-label">💐 Mid Notes</label>
+    <textarea class="form-textarea" id="fMid" placeholder="Rose, Jasmine, Iris…"></textarea>
+  </div>
+  <div style="margin-bottom:10px">
+    <label class="form-label">🌿 Base Notes</label>
+    <textarea class="form-textarea" id="fBase" placeholder="Sandalwood, Musk, Amber…"></textarea>
+  </div>
+  <button class="save-btn" onclick="saveFragrance()">Save to Database</button>
+  <button class="save-btn" style="margin-top:10px; background: linear-gradient(135deg, #4a7a6a, #5a9a80);" onclick="exportApp()">📥 Export Updated File</button>
+</div>
+
+<div class="toast" id="toast">✅ Saved: Euphoria Magnetic Elixir by Calvin Klein</div>
+
+<script>
+const RAW_DATA = [{"brand":"Adidas","name":"Moves","launched":"1999","gender":"Men","family":"","type":"Edt","top":["Tomato Leaf","Green Apple","Pineapple","Mint","Black Pepper","Mandarin Orange","Star Anise"],"mid":["Lavender","Musk","Juniper Berries","Cedar","Ginger","Geranium","Jasmine"],"base":["Thyme","Sandalwood","Oakmoss","Lily-of-the-Valley"]},{"brand":"Adidas","name":"Moves for Her","launched":"1999","gender":"Women","family":"","type":"Edt","top":["Cedar","Cyclamen"],"mid":["Rose","Geranium"],"base":["Ginger","White Woods"]},{"brand":"Anna Sui","name":"Cosmic Sky","launched":"2022","gender":"Women","family":"","type":"Edt","top":["Pear","Bergamot"],"mid":["Ambrette (Musk Mallow)","Apple Blossom","Iris"],"base":["Brown Sugar","White Woods","Amber"]},{"brand":"Anna Sui","name":"Fantasia","launched":"2017","gender":"Women","family":"","type":"Edt","top":["Pomelo","Pink Pepper"],"mid":["Praline","Raspberry","Floral Notes"],"base":["Cypress","Himalayan Cedar"]},{"brand":"Ariana Grande","name":"Cloud","launched":"2018","gender":"Women","family":"Floral Fruity Gourmand","type":"Edp","top":["Lavendar","Pear","Bergamot"],"mid":["Whipped Cream","Coconut","Praline","Vanilla Orchid"],"base":["Musk","Woody Notes"]},{"brand":"Ariana Grande","name":"MOD Vanilla","launched":"2022","gender":"Women","family":"Oriental Vanilla","type":"Edp","top":["Musk","Plum","Pink Freesia"],"mid":["Praline","Orris Root"],"base":["Vanilla","Cacao Butter"]},{"brand":"Ariana Grande","name":"Sweet Like Candy","launched":"2016","gender":"Women","family":"Floral Fruity Gourmand","type":"Edp","top":["Blackberry","Pear","Bergamot"],"mid":["Whipped Cream","Marshmallow","Black Currant","Jasmine","Frangipani","Honeysuckle"],"base":["Vanilla","Cashmere Wood"]},{"brand":"Ariana Grande","name":"Thank U Next","launched":"2019","gender":"Women","family":"Floral Fruity Gourmand","type":"Edp","top":["Raspberry","Pear"],"mid":["Coconut","Pink Rose"],"base":["Macarons","Musk"]},{"brand":"Ariana Grande","name":"Moonlight","launched":"2017","gender":"Women","family":"Floral Fruity","type":"Edp","top":["Plum","Black Currant"],"mid":["Marshmallow","Peony"],"base":["Vanilla","Sandalwood","Amber"]},{"brand":"Ariana Grande","name":"Ari","launched":"2015","gender":"Women","family":"Floral Fruity Gourmand","type":"Edp","top":["Raspberry","Pear","Grapefruit"],"mid":["Vanilla Orchid","Rose","Lily-of-the-Valley"],"base":["Marshmallow","Musk","Woody Notes"]},{"brand":"Ariana Grande","name":"Cloud Pink","launched":"2023","gender":"Women","family":"Oriental Vanilla","type":"Edp","top":["Pitahaya","Wild Berries","Pineapple"],"mid":["Coconut Water","Vanilla Orchid","Ambrette"],"base":["Praline","Musk","Amberwood","Moss"]},{"brand":"Ariana Grande","name":"MOD Blush","launched":"2022","gender":"Women","family":"","type":"Edp","top":["Raspberry","Passionfruit","Pink Pepper","Bergamot"],"mid":["Rose","Pear","Magnolia"],"base":["Musk","Ambroxan","Dreamwood","Sandalwood"]},{"brand":"Ariana Grande","name":"God is a Woman","launched":"2021","gender":"Women","family":"Oriental Floral","type":"Edp","top":["Pear","Anbrette (Musk Mallow)"],"mid":["Orris","Turkish Rose"],"base":["Madagascar Vanilla","Sandalwood"]},{"brand":"Ariana Grande","name":"R.E.M. Cherry Eclipse","launched":"2025","gender":"Women","family":"","type":"Edp","top":["Black Cherry","Honeysuckle"],"mid":["Marshmallow","Jasmine Sambac"],"base":["Musk","Amber"]},{"brand":"Ariana Grande","name":"R.E.M.","launched":"2020","gender":"Women","family":"Oriental Vanilla","type":"Edp","top":["Zefir","Caramel","Salt","Fig","Quince"],"mid":["Orris","Pear Blossom"],"base":["Musk","Tonka Bean","Sandalwood"]},{"brand":"Ariana Grande","name":"LOVENOTES Pink Woods","launched":"2024","gender":"Women","family":"Woody","type":"Edp","top":["Bergamot","Lotus"],"mid":["Tea","Vetiver","Jasmine"],"base":["Cashmere Wood","Cotton Candy","Tonka"]},{"brand":"Azzaro","name":"Chrome","launched":"1996","gender":"Men","family":"","type":"Edt","top":["Lemon","Rosemary","Bergamot","Neroli","Pineapple"],"mid":["Jasmine","Oakmoss","Cyclamen","Coriander"],"base":["Musk","Oakmoss","Cedar","Sandalwood","Cardamom","Brazilian Rosewood","Tonka Bean"]},{"brand":"Azzaro","name":"Chrome Eau de Parfum","launched":"2022","gender":"Men","family":"","type":"Edp","top":["Green Mandarin"],"mid":["Lavender"],"base":["Pine"]},{"brand":"Azzaro","name":"Chrome Parfum","launched":"2023","gender":"Men","family":"","type":"Parfum","top":["Bergamot"],"mid":["Sage"],"base":["Fir Resin"]},{"brand":"Azzaro","name":"Chrome Azure","launched":"2024","gender":"Men","family":"","type":"Edt","top":["Bergamot"],"mid":["Lavender"],"base":["Marine Notes"]},{"brand":"Azzaro","name":"Wanted Eau de Parfum","launched":"2023","gender":"Men","family":"","type":"Edp","top":["Juniper Berries"],"mid":["Sage"],"base":["Vetiver"]},{"brand":"Azzaro","name":"The Most Wanted Intense","launched":"2024","gender":"Men","family":"","type":"Edt","top":["Bergamot"],"mid":["Lavender"],"base":["Liquor","Moss"]},{"brand":"Azzaro","name":"The Most Wanted Eau de Parfum Intense","launched":"","gender":"Men","family":"","type":"Edp","top":["Cardamom"],"mid":["Toffee"],"base":["Amberwood"]},{"brand":"Azzaro","name":"The Most Wanted Parfum","launched":"","gender":"Men","family":"","type":"Parfum","top":["Ginger"],"mid":["Woodsy Notes"],"base":["Bourbon Vanilla"]},{"brand":"Azzaro","name":"Forever Wanted Elixir","launched":"2025","gender":"Men","family":"","type":"Parfum Intense","top":["Raspberry","Green Mandarin","Bergamot"],"mid":["Cardamom","Lavenadar","Clary Sage"],"base":["Leather","Wolfwood","Vetiver"]},{"brand":"Bentley","name":"Bentley for Men Black Edition","launched":"2018","gender":"Men","family":"","type":"Edp","top":["Violet","Tangerine","Pink Pepper","Nutmeg"],"mid":["Papyrus","Earthy Notes","Patchouli","Jasmine","Sweet Notes"],"base":["Moss","Tobacco","Atlas Cedar","Incense","Tonka Bean"]},{"brand":"Bentley","name":"Bentley for Men Silverlake","launched":"2020","gender":"Men","family":"","type":"Edp","top":["Lemon","Mint"],"mid":["Violet Leaves","Lavender","Pink Pepper"],"base":["White Musk","Amberwood"]},{"brand":"Billie Eilish","name":"Eilish","launched":"2021","gender":"Women","family":"Oriental Vanilla","type":"Edp","top":["Sugar","Mandarin","Red Berries"],"mid":["Vanilla","Spicy Notes","Cocoa","Rose"],"base":["Woody Notes","Musk","Tonka Bean","Amber"]},{"brand":"Billie Eilish","name":"Eilish No. 2","launched":"2022","gender":"Unisex","family":"Woody Floral Musk","type":"Edp","top":["Bergamot","Apple Blossom","Incense"],"mid":["Black Pepper","Papyrus","Poppy"],"base":["Palo Santo","Ebony","Vanilla","Musk"]},{"brand":"Calvin Klein","name":"Eternity","launched":"1988","gender":"Women","family":"Floral","type":"Edp","top":["Green Notes","Freesia","Sage","Citrus","Mandarin Orange"],"mid":["Carnation","Lily","Lily-of-the-Valley","Narcissus","Jasmine","Violet","Rose"],"base":["Musk","Heliotrope","Sandalwood","Amber","Patchouli"]},{"brand":"Calvin Klein","name":"Eternity Eau de Parfum Intense","launched":"2022","gender":"Women","family":"Floral","type":"Edp Intense","top":["Turkish Rose"],"mid":["Sichuan Pepper"],"base":["Jasmine Sambac"]},{"brand":"Calvin Klein","name":"Eternity for Men","launched":"1990","gender":"Men","family":"Aromatic","type":"Edt","top":["Lavender","Lemon","Bergamot","Mandarin Orange"],"mid":["Sage","Juniper Berries","Basil","Geranium","Jasmine","Coriander","Orange Blossom","Lily","Lily-of-the-valley"],"base":["Sandalwood","Musk","Vetiver","Amber","Brazillian Rosewood"]},{"brand":"Calvin Klein","name":"Eternity Aqua for Men","launched":"2010","gender":"Men","family":"Woody Aromatic","type":"Edt","top":["Cucumber","Citrus","Green Notes","Lotus"],"mid":["Lavender","Plum","Sichuan Pepper","Virginia Cedar"],"base":["Musk","Sandalwood","Patchouli","Guaiac Wood"]},{"brand":"Calvin Klein","name":"Eternity Aromatic Essence","launched":"2024","gender":"Women","family":"Floral","type":"Parfum Intense","top":["Aquatic Notes","Lime","Lavender","Ambrette"],"mid":["Coconut Water","Salt","Peony","Black Currant"],"base":["Sandalwood"]},{"brand":"Calvin Klein","name":"Eternity Aromatic Essence for Men","launched":"2024","gender":"Men","family":"Aromatic","type":"Parfum Intense","top":["Juniper Berries","Lemon","Sichuan Pepper"],"mid":["Coconut","Lavendar"],"base":["Guatemalan Cardamom","Cedarwood","Patchouli"]},{"brand":"Calvin Klein","name":"Eternity Amber Essence","launched":"2025","gender":"Women","family":"Amber","type":"Parfum Intense","top":["Angelica Root","Ylang Ylang"],"mid":["Amber"],"base":["Vanilla Absolut","Benzoin"]},{"brand":"Calvin Klein","name":"Eternity Amber Essence for Men","launched":"2025","gender":"Men","family":"Amber","type":"Parfum Intense","top":["Italian Mandarin"],"mid":["Amber"],"base":["Bourbon Vanilla","Benzoin"]},{"brand":"Calvin Klein","name":"CK One","launched":"1994","gender":"Unisex","family":"Citrus Aromatic","type":"Edt","top":["Lemon","Green Notes","Bergamot","Mandarin Orange","Pineapple","Cardamom","Papaya"],"mid":["Lily-of-the-Valley","Jasmine","Violet","Rose","Nutmeg","Freesia","Orris Root"],"base":["Green Accord","Musk","Cedar","Green Tea","Sandalwood","Amber","Oakmoss"]},{"brand":"Calvin Klein","name":"Euphoria","launched":"2005","gender":"Women","family":"Oriental Floral","type":"Edp","top":["Pomegranate","Persimmon","Green Accord"],"mid":["Black Orchid","Lotus","Champaca"],"base":["Mahogany","Amber","Black Violet","Whipped Cream"]},{"brand":"Calvin Klein","name":"Euphoria Men","launched":"2006","gender":"Men","family":"Woody Aromatic","type":"Edt","top":["Ginger","Pepper"],"mid":["Black Basil","Sage","Cedar"],"base":["Amber","Suede","Brazillian Redwood","Patchouli"]},{"brand":"Calvin Klein","name":"Euphoria Eau de Toilette","launched":"","gender":"Women","family":"","type":"Edt","top":["Raspberry Leaf","Mirabelle","Pepper"],"mid":["Rose","Guava","Orchid"],"base":["Cashmere Wood","Amber","Vanilla"]},{"brand":"Calvin Klein","name":"My Euphoria","launched":"2023","gender":"Women","family":"Oriental Floral","type":"Edp","top":["Black Currant"],"mid":["Orchid","Sesame","Tuberose"],"base":["Sandalwood","Oud","Bamboo"]},{"brand":"Calvin Klein","name":"Obsession","launched":"1985","gender":"Women","family":"Oriental Spicy","type":"Edp","top":["Vanilla","Basil","Bergamot","Mandarin Orange","Peach","Lemon","Green Notes"],"mid":["Sandalwood","Coriander","Oakmoss","Cedar","Jasmine","Spices","Orange Blossom","Rose"],"base":["Amber","Musk","Incense","Vanilla","Civet","Vetiver"]},{"brand":"Calvin Klein","name":"Obsession for Men","launched":"1986","gender":"Men","family":"Oriental Woody","type":"Edt","top":["Cinnamon","Lavender","Coriander","Mandarin Orange","Lime","Bergamot","Grapefruit"],"mid":["Myrhh","Nutmeg","Carnation","Brazillian Rosewood","Pine Tree","Sage","Jasmine","Red Berries"],"base":["Amber","Vanilla","Musk","Sandalwood","Patchouli","Vetiver"]},{"brand":"Calvin Klein","name":"Cotton Musk Body Mist","launched":"2025","gender":"Unisex","family":"","type":"Body Mist","top":["White Musk"],"mid":[],"base":[]},{"brand":"Calvin Klein","name":"Nude Vanilla Body Mist","launched":"2025","gender":"Unisex","family":"","type":"Body Mist","top":["Vanilla","Musk"],"mid":[],"base":[]},{"brand":"Calvin Klein","name":"Sheer Peach Body Mist","launched":"2025","gender":"Unisex","family":"","type":"Body Mist","top":["Peach","Musk"],"mid":[],"base":[]},{"brand":"Calvin Klein","name":"Silky Coconut Body Mist","launched":"2025","gender":"Unisex","family":"","type":"Body Mist","top":["Coconut","Musk"],"mid":[],"base":[]},{"brand":"Carolina Herrera","name":"Good Girl","launched":"2016","gender":"Women","family":"Oriental Floral","type":"Edp","top":["Almond","Coffee","Bergamot","Lemon"],"mid":["Tuberose","Jasmine Sambac","Orange Blossom","Bulgarian Rose","Orris"],"base":["Tonka Bean","Cacao","Vanilla","Sandalwood","Praline","Musk","Amber","Cashmere Wood","Patchouli","Cinnamon"]},{"brand":"Carolina Herrera","name":"Good Girl Blush","launched":"2023","gender":"Women","family":"Chypre Floral","type":"Edp","top":["Bergamot","Bitter Almond"],"mid":["Tuberose","Ylang Ylang"],"base":["Vanilla","Coumarin"]},{"brand":"Carolina Herrera","name":"Good Girl Blush Elixir","launched":"2024","gender":"Women","family":"","type":"Elixir","top":["Bergamot","Mandarin Orange"],"mid":["Ylang-Ylang","Rose"],"base":["Vanilla","Patchouli"]},{"brand":"Carolina Herrera","name":"Very Good Girl","launched":"2021","gender":"Women","family":"Floral Fruity","type":"Edp","top":["Redcurrant","Lychee"],"mid":["Rose"],"base":["Vetiver","Vanilla"]},{"brand":"Carolina Herrera","name":"Very Good Girl Glam","launched":"2022","gender":"Women","family":"","type":"Edp","top":["Sour Cherry","Bitter Almond"],"mid":["Rose","Lily"],"base":["Bourbon Vanilla","Vetiver"]},{"brand":"Carolina Herrera","name":"Very Good Girl Elixir","launched":"2024","gender":"Women","family":"Oriental Floral","type":"Elixir","top":["Black Cherry","Almond"],"mid":["Rose","Tuberose"],"base":["Vanilla","Cacao"]},{"brand":"Carolina Herrera","name":"Bad Boy","launched":"2019","gender":"Men","family":"","type":"Edt","top":["White Pepper","Bergamot","Pink Pepper"],"mid":["Cedar","Sage"],"base":["Tonka Bean","Cacao"]},{"brand":"Carolina Herrera","name":"Bad Boy Extreme","launched":"2022","gender":"Men","family":"","type":"Edp","top":["Cacao","Tonka Bean","Patchouli","Incense"],"mid":["Vetiver","Plum","Clary Sage","Olibanum","Ginger"],"base":["Opoponax","Bergamot","Davana","Labdanum"]},{"brand":"Carolina Herrera","name":"Bad Boy Cobalt","launched":"2022","gender":"Men","family":"Woody Aromatic","type":"Edp","top":["Lavendar","Pink Pepper"],"mid":["Plum","Geranium"],"base":["Cedar","Vetiver","Truffle","Oak"]},{"brand":"Carolina Herrera","name":"Bad Boy Cobalt Elixir","launched":"2024","gender":"Men","family":"","type":"Elixir","top":["Black Pepper","Sage"],"mid":["Truffle","Woodsy Notes"],"base":["Vanilla","Frankincense"]},{"brand":"Christian Siriano","name":"Silhouette Au Naturel","launched":"2022","gender":"Women","family":"","type":"Edp","top":["Pear","Mandarin","Peach"],"mid":["Coconut Water","Water Lily","Jasmine"],"base":["Musk","Sandalwood","Amber"]},{"brand":"Coach","name":"Poppy","launched":"2010","gender":"Women","family":"Floral","type":"Edp","top":["Cucumber","Mandarin Orange","Freesia"],"mid":["Water Lily","Jasmine","Gardenia"],"base":["Marshmallow","Vanilla","Sandalwood","Virginia Cedar"]},{"brand":"Coach","name":"Poppy Crush","launched":"2019","gender":"Women","family":"Floral","type":"Edp","top":["Honeysuckle"],"mid":["Mandarin Orange"],"base":["Vanilla"]},{"brand":"Coach","name":"Coach for Men","launched":"2017","gender":"Men","family":"Woody and Earthy","type":"Edt","top":["Pear","Bergamot","Kumquat","Lavender","Grapefruit"],"mid":["Cardamom","Coriander","Geranium"],"base":["Vetiver","Suede","Amberwood","Ambergris"]},{"brand":"Coach","name":"Coach Blue","launched":"2020","gender":"Men","family":"Woody and Earthy","type":"Edt","top":["Lime Oil","Absinthe Oil"],"mid":["Ozone Accord","Black Pepper"],"base":["Cedarwood","Amber"]},{"brand":"Coach","name":"Coach Green","launched":"2023","gender":"Men","family":"Woody and Earthy","type":"Edt","top":["Kiwi Accord","Bergamot"],"mid":["Rosemary Essence","Geranium"],"base":["Moss","Cedarwood"]},{"brand":"Coach","name":"Dreams Sunset","launched":"2021","gender":"Women","family":"Floral","type":"Edp","top":["Pear","Bergamot"],"mid":["Jasmine Sambac","Magnolia"],"base":["Tonka Bean","Vanilla"]},{"brand":"Coach","name":"Dreams","launched":"2020","gender":"Women","family":"Floral","type":"Edp","top":["Juicy Pear","Bitter Orange","Fruits"],"mid":["Cactus Flower","Gardenia"],"base":["Woody Notes","Ambroxan"]},{"brand":"Coach","name":"Dreams Moonlight","launched":"2024","gender":"Women","family":"Floral Fruity Gourmand","type":"Edp","top":["Bergamot"],"mid":["Jasmine","Rose"],"base":["Tonka Bean","Patchouli"]},{"brand":"Cosmpolitan","name":"Eau de Juice Pure Sugar","launched":"","gender":"Women","family":"","type":"Body Mist","top":["Strawberry","Pink Grapefruit"],"mid":["Praline","Plum"],"base":["Jasmine","Pepper"]},{"brand":"Cosmpolitan","name":"Eau de Juice Happy Place","launched":"","gender":"Women","family":"","type":"Body Mist","top":["Coconut","Cassia"],"mid":["Vanilla","Almond"],"base":["Sandalwood","Musk"]},{"brand":"Cosmpolitan","name":"Eau de Juice Beach Please","launched":"","gender":"Women","family":"","type":"Body Mist","top":["Pineapple","Coconut Water"],"mid":["Whipped Cream","Monk Fruit"],"base":["Sandalwood","Musk"]},{"brand":"Cosmpolitan","name":"Eau de Juice Good Energy","launched":"","gender":"Women","family":"","type":"Body Mist","top":["Mandarin","Passion Fruit"],"mid":["Tiger Lily","Mango"],"base":["Sandalwood","Musk"]},{"brand":"Cosmpolitan","name":"Eau de Juice 100% Chilled","launched":"","gender":"Women","family":"","type":"Body Mist","top":["Red Berries","Bergamot"],"mid":["Coconut Water","Orange Blossom"],"base":["Musk","Sandalwood"]},{"brand":"Cosmpolitan","name":"Eau de Juice Cherry Cherie","launched":"","gender":"Women","family":"","type":"Body Mist","top":["Black Cherry","Raspberry"],"mid":["Musk"],"base":["Vanilla","Amber"]},{"brand":"David Beckham","name":"Amber Breeze","launched":"2022","gender":"Men","family":"","type":"Edp","top":["Bergamot","Rosemary","Black Pepper"],"mid":["Lavender","Rose","Sage"],"base":["Tonka","Vetiver","Patchouli"]},{"brand":"David Beckham","name":"Refined Woods","launched":"2021","gender":"Unisex","family":"","type":"Edp","top":["Cedar","Tonka"],"mid":["Orris","Lavender","Geranium"],"base":["Tonka Bean","Cedar","Vetiver"]},{"brand":"David Beckham","name":"True Instinct","launched":"","gender":"Men","family":"","type":"Edp","top":["Pine","Basil"],"mid":["Sandalwood","Geranium"],"base":["Patchouli","Vetiver","Musk"]},{"brand":"David Beckham","name":"Bold Instinct","launched":"2020","gender":"Men","family":"","type":"Edp","top":["Pineapple","Bayleaf","Peat"],"mid":["Cardamom","Nutmeg","Cinnamon"],"base":["Patchouli","Ambergris","Musk"]},{"brand":"David Beckham","name":"Botanical Resin","launched":"2025","gender":"Men","family":"","type":"Edp","top":["Grapefruit","Pink Pepper","Cardamom","Lemon"],"mid":["Cypress","Cinnamon Leaf","Fir","Ginger"],"base":["Sandalwood","Tonka Bean","Patchouli","Amber","Vanilla"]},{"brand":"David Beckham","name":"Exquisite Leather","launched":"","gender":"Men","family":"","type":"Edp","top":["Cardamom","Raspberry","Pink Pepper","Apple"],"mid":["Leather","Orris","Jasmine","Juniper"],"base":["Sandalwood","Cedar","Cashmeran","Musk","Moss"]},{"brand":"David Beckham","name":"Instinct 20th Anniversary Edition","launched":"2025","gender":"Men","family":"","type":"Edp","top":["Patchouli","Apple"],"mid":["Bergamot","Aldehydes"],"base":["Cashmeran"]},{"brand":"David Beckham","name":"Classic Blue","launched":"2014","gender":"Men","family":"","type":"Edt","top":["Violet Leaf","Pineapple","Grapefruit"],"mid":["Apple","Clary Sage","Geranium"],"base":["Cashmere Wood","Moss","Patchouli"]},{"brand":"Davidoff","name":"Cool Water","launched":"1988","gender":"Men","family":"","type":"Edt","top":["Sea Water","Lavender","Mint","Green Notes","Rosemary","Calone","Coriander"],"mid":["Sandalwood","Neroli","Geranium","Jasmine"],"base":["Musk","Tobacco","Oakmoss","Cedar","Ambergris"]},{"brand":"Davidoff","name":"Cool Water Intense","launched":"2019","gender":"Men","family":"","type":"Edp","top":["Green Mandarin"],"mid":["Coconut Nectar"],"base":["Amber"]},{"brand":"Davidoff","name":"Cool Elixir","launched":"2025","gender":"Men","family":"","type":"Parfum Intense","top":["Rose Oxide","Rosemary"],"mid":["Lavender"],"base":["Oud"]},{"brand":"Diesel","name":"D by Diesel","launched":"2022","gender":"Unisex","family":"","type":"Edt","top":["Ginger","Bergamot"],"mid":["Cotton Flower","Lavender"],"base":["Vanilla","Amberwood"]},{"brand":"Diesel","name":"D Red by Diesel","launched":"2024","gender":"Unisex","family":"","type":"Edt","top":["Blood Grapefruit"],"mid":["Lavender"],"base":["Sandalwood"]},{"brand":"Diesel","name":"Only the Brave","launched":"2009","gender":"Men","family":"","type":"Edt","top":["Amalfi Lemon","Mandarin Orange"],"mid":["Violet","Virginia Cedar","Coriander"],"base":["Amber","Leather","Benzoin","French Labdanum","Styrax"]},{"brand":"DKNY","name":"Be Delicious","launched":"2004","gender":"Women","family":"","type":"Edp","top":["Cucumber","Grapefruit","Magnolia"],"mid":["Green Apple","Lily-of-the-Valley","Tuberose","Violet","Rose"],"base":["Woody Notes","Sandalwood","Amber"]},{"brand":"DKNY","name":"Be Delicious Orchard St","launched":"2023","gender":"Women","family":"","type":"Edp","top":["Apple","Pink Grapefruit"],"mid":["Raspberry","Pomegranate","Jasmine","Orris"],"base":["Cedarwood","Leather"]},{"brand":"DKNY","name":"24/7","launched":"2024","gender":"Women","family":"","type":"Edp","top":["Pink Pepper","Rhubarb"],"mid":["Quince","Rose","Green Notes","Jasmine Sambac","Tuberose"],"base":["Cedarwood","Musk","Sandalwood","Ambrox Super"]},{"brand":"Dolce & Gabbana","name":"Devotion","launched":"2023","gender":"Women","family":"","type":"Edp","top":["Candied Lemon"],"mid":["Orange Blossom","Panacotta","Rum"],"base":["Vanilla"]},{"brand":"Dolce & Gabbana","name":"K by Dolce & Gabbana","launched":"2019","gender":"Men","family":"","type":"Edt","top":["Citrus","Blood Orange","Juniper Berries","Sicilian Lemon"],"mid":["Pimento","Clary Sage","Geranium","Lavander"],"base":["Cedarwood","Vetiver","Patchouli"]},{"brand":"Dolce & Gabbana","name":"K by Dolce & Gabbana Eau de Parfum","launched":"2020","gender":"Men","family":"","type":"Edp","top":["Blood Orange","Juniper Berries","Lemon","Cardamom","Pimento","Sicilian Lemon"],"mid":["Fig Nectar","Geranium","Lavender","Clary Sage"],"base":["Cedar","Patchouli","Vetiver","Cypriol Oil"]},{"brand":"Dolce & Gabbana","name":"Light Blue","launched":"2001","gender":"Women","family":"","type":"Edt","top":["Sicilian Lemon","Apple","Cedar","Bellflower"],"mid":["Bamboo","Jasmine","White Rose"],"base":["Cedar","Musk","Amber"]},{"brand":"Dolce & Gabbana","name":"Light Blue Eau Intense","launched":"2017","gender":"Women","family":"","type":"Edp","top":["Lemon","Granny Smith Apple"],"mid":["Marigold","Jasmine"],"base":["Amberwood","Musk"]},{"brand":"Dolce & Gabbana","name":"Light Blue Pour Homme","launched":"2007","gender":"Men","family":"","type":"Edt","top":["Grapefruit","Bergamot","Mandarin","Juniper"],"mid":["Pepper","Rosemary","Rosewood"],"base":["Musk","Incense","Oakmoss"]},{"brand":"Dolce & Gabbana","name":"Light Blue Intense Pour Homme","launched":"2017","gender":"Men","family":"","type":"Edp","top":["Mandarin","Grapefruit"],"mid":["Sea Water","Juniper"],"base":["Amberwood","Musk"]},{"brand":"Dolce & Gabbana","name":"Q by Dolce & Gabbana","launched":"2023","gender":"Women","family":"","type":"Edp","top":["Sicilian Lemon","Blood Orange","Jasmine"],"mid":["Cherry","Heliotrope"],"base":["Cedar","Musk"]},{"brand":"Dolce & Gabbana","name":"The One","launched":"2006","gender":"Women","family":"","type":"Edp","top":["Bergamot","Mandarin","Lychee","Peach"],"mid":["Lily","Plum","Jasmine","Lily-of-the-Valley"],"base":["Vanilla","Amber","Musk","Vetiver"]},{"brand":"Dolce & Gabbana","name":"The One for Men","launched":"2008","gender":"Men","family":"","type":"Edt","top":["Coriander","Basil","Grapefruit"],"mid":["Ginger","Orange Blossom","Cardamom"],"base":["Amber","Cedar","Tobacco"]},{"brand":"Dolce & Gabbana","name":"The One for Men Eau de Parfum","launched":"2015","gender":"Men","family":"","type":"Edp","top":["Grapefruit","Coriander","Basil"],"mid":["Orange Blossom","Ginger","Cardamom"],"base":["Tobacco","Amber","Cedar"]},{"brand":"Dolly Parton","name":"Scent from Above","launched":"2021","gender":"Women","family":"","type":"Edt","top":["Mandarin","Blackcurrant","Pear","Peony"],"mid":["Jasmine","Lily-of-the-Valley","Vanilla Orchid"],"base":["Sandalwood","Musk","Fir","Amber","Patchouli","Tonka Bean"]},{"brand":"Dolly Parton","name":"Tennessee Sunset","launched":"","gender":"Women","family":"","type":"Edt","top":["Honeysuckle"],"mid":["Vanilla Orchid"],"base":["Musk"]},{"brand":"Frida Kahlo","name":"Frida Kahlo Eau de Toilette","launched":"2022","gender":"Women","family":"Floral","type":"Edt","top":["Grapefruit","Clove","Black Pepper","Bergamot"],"mid":["Lily-of-the-Valley","Freesia","Rose","Geranium","Jasmine","Labdanum"],"base":["Cedarwood","Moss","Musk","Vanilla","Vetiver","Patchouli","Amber"]},{"brand":"Frida Kahlo","name":"Frida Kahlo Blue","launched":"2024","gender":"Women","family":"Floral","type":"Edp","top":["Agave","Coconut Water","Pear"],"mid":["Orchid","Orange Blossom","Jasmine"],"base":["Mexican Vanilla","Amber","Tonka Bean"]},{"brand":"Golf le Fleur","name":"French Waltz","launched":"2021","gender":"Unisex","family":"","type":"Edp","top":["Magnolia","Lychee","Nashi Pear","Mandarin Orange"],"mid":["Rose","Jasmine","Mimosa","Lily-of-the-Valley"],"base":["Musk","Sandalwood"]},{"brand":"Guess","name":"Bella Vita","launched":"2020","gender":"Women","family":"","type":"Edp","top":["Sour Cherry","Black Currant","Italian Lemon"],"mid":["Tuberose","Jasmine","Vanilla Orchid"],"base":["Praline","Tonka Bean","Amberwood","Musk"]},{"brand":"Guess","name":"Bella Vita Paradiso","launched":"2023","gender":"Women","family":"","type":"Edp","top":["Pear Blossom","Red Fruits","Italian Mandarin"],"mid":["Gardenia","Tuberose","Jasmine"],"base":["Musk","Amber","Patchouli"]},{"brand":"Guess","name":"Bella Vita Rosa","launched":"2022","gender":"Women","family":"","type":"Edp","top":["Quince","Italian Lemon","Black Currant"],"mid":["Magnolia","Cypress","Jasmine","Lily-of-the-Valley"],"base":["Musk","Sandalwood","Moss","Iris Petals"]},{"brand":"Guess","name":"La Mia Bella Vita","launched":"2025","gender":"Women","family":"","type":"Edp","top":["Lychee","Pink Pepper"],"mid":["Floral Notes"],"base":["Vanilla"]},{"brand":"Guess","name":"Guess Uomo","launched":"2022","gender":"Men","family":"","type":"Edt","top":["Cardamom","Lavender","Grapefruit"],"mid":["Sage","Saffron","Geranium"],"base":["Amber","Dark woodsy notes","Benzoin"]},{"brand":"Guess","name":"Guess Uomo Acqua","launched":"2023","gender":"Men","family":"","type":"Edt","top":["Lemon","Cucumber","Cardamom"],"mid":["Cypress","Sage","Juniper"],"base":["Sea Notes","Sandalwood","Moss","Palo Santo"]},{"brand":"Guess","name":"Guess Uomo Intenso","launched":"2024","gender":"Men","family":"","type":"Edp","top":["Ozonic Notes","Mugwort","Bergamot","Mint"],"mid":["Lavender","Orange Blossom","Cinnamon","Sage","Thyme"],"base":["Amber Xtreme","Tonka Bean","Benzoin","Sandalwood"]},{"brand":"Guess","name":"Iconic","launched":"2024","gender":"Women","family":"","type":"Edp","top":["Mandarin Orange","LilyBelle","Pink Pepper"],"mid":["Orange Blossom","Sea Notes","Ylang Ylang","Calabrian Bergamot","Geranium"],"base":["Amber","Ambroxan","Musk","Moss"]},{"brand":"Guess","name":"Iconic Sublime","launched":"2026","gender":"Women","family":"","type":"","top":["Aquatic Notes","Mandarin","Cardamom"],"mid":["Blue Lotus","Jasmine","Magnolia"],"base":["Amber","Vanilla","Sandalwood"]},{"brand":"Guess","name":"Iconic Homme","launched":"2025","gender":"Men","family":"","type":"Edp","top":["Cedar","Mandarin","Pepper"],"mid":["Lavender","Mate","Geranium","Sage"],"base":["Vetiver","Pepper","Suede","Labdanum"]},{"brand":"Guy Laroche","name":"Drakkar Noir","launched":"1982","gender":"Men","family":"","type":"Edt","top":["Lavender","Lemon","Bergamot","Rosemary","Mint","Lemon Verbena","Basil","Artemisia"],"mid":["Juniper","Coriander","Cinnamon","Carnation","Wormwood","Angelica","Jasmine"],"base":["Oakmoss","Leather","Fir","Pine Tree Needles","Sandalwood","Vetiver","Patchouli","Cedar","Amber","Resins"]},{"brand":"Guy Laroche","name":"Drakkar Intense","launched":"2022","gender":"Men","family":"","type":"Edp","top":["Wormwood","Coriander","Rosemary","Bergamot"],"mid":["Clary Sage","Lavender","Juniper Berries"],"base":["Patchouli","Moss","Suede","Lavender"]},{"brand":"Guy Laroche","name":"Drakkar Bleu","launched":"2025","gender":"Men","family":"","type":"Edp","top":["Spearmint","Apple","Bergamot"],"mid":["Sage","Lavender","Violet Leaf"],"base":["Patchouli","Moss","Fir"]},{"brand":"Hugo Boss","name":"Hugo Boss Man","launched":"","gender":"Men","family":"","type":"Edt","top":["Green Apple"],"mid":["Lavender"],"base":["Pine","Woody Notes","Balsam Fir"]},{"brand":"Jaguar","name":"Jaguar Era","launched":"2022","gender":"Men","family":"","type":"Edt","top":["Bergamot","Lemon","Mandarin"],"mid":["Pineapple","Mojito","Spices","Geranium","Lavender","Cardamom","Anise"],"base":["Cedar","Patchouli","Virginian Cedar","Musk","Sandalwood","Amber","Cedar Needles"]},{"brand":"Jaguar","name":"Jaguar Era Reloaded","launched":"2024","gender":"Men","family":"","type":"Edp","top":["Sicilian Lemon","Orange"],"mid":["Pineapple","Pink Pepper","Nutmeg","Jasmine","Apple","Melon","Peppermint"],"base":["Amber Xtreme","Sandalwood","Tonka Bean","Vanilla","Caramel","Musk","Cedarwood","Amber","Labdanum","Patchouli"]},{"brand":"Jean Paul Gaultier","name":"Le Male","launched":"1995","gender":"Men","family":"","type":"Edt","top":["Mint","Lavender","Bergamot","Cardamom","Artemisia"],"mid":["Cinnamon","Caraway","Orange Blossom"],"base":["Vanilla","Tonka Bean","Sandalwood","Cedarwood","Ambergris"]},{"brand":"Jean Paul Gaultier","name":"Le Male Le Parfum","launched":"2020","gender":"Men","family":"","type":"Edp","top":["Cardamom"],"mid":["Lavender","Iris"],"base":["Vanilla","Oriental Notes","Woodsy Notes"]},{"brand":"Jean Paul Gaultier","name":"Classique","launched":"1993","gender":"Women","family":"","type":"","top":["Orange Blossom","Star Anise","Rose","Mandarin Orange","Pear","Bergamot"],"mid":["Ginger","Iris","Plum","Orchid","Ylang-Ylang","Tuberose"],"base":["Vanilla","Amber","Musk","Cinnamon","Sandalwood"]},{"brand":"Jean Paul Gaultier","name":"Gaultier Divine","launched":"","gender":"Women","family":"","type":"Edp","top":["Calypsone","Red Berries","Bergamot"],"mid":["Lily","Ylang-Ylang","Jasmine"],"base":["Meringue","Musk","Patchouli"]},{"brand":"Jean Paul Gaultier","name":"Divine Le Parfum","launched":"2024","gender":"Women","family":"","type":"Parfum","top":["Solar Notes","Lily"],"mid":["Frangipani","Sea Salt"],"base":["Amber","Benzoin"]},{"brand":"Jennifer Lopez","name":"Promise","launched":"2019","gender":"Women","family":"","type":"Edp","top":["Italian Tangerine","Pink Pepper","Nashi Pear"],"mid":["Orris Root","Jasmine Sambac","Honeysuckle"],"base":["Crystal Amber","Sandalwood","Cashmere Wood"]},{"brand":"Jennifer Lopez","name":"Limitless","launched":"2024","gender":"Women","family":"","type":"Edp","top":["Lemon","Black Pepper","Red Apple"],"mid":["Jasmine","Ylang-Ylang","Patchouli"],"base":["Palo Santo","Sandalwood","Vanilla","Musk","Velvet"]},{"brand":"Jessica Simpson","name":"Mystic Canyon","launched":"2025","gender":"Women","family":"","type":"","top":["Pink Pepper","Black Currant","Plum"],"mid":["Jasmine","Rose","Iris"],"base":["Vanilla","Amber","Cedar","Oakmoss","Patchouli"]},{"brand":"Jimmy Choo","name":"Jimmy Choo","launched":"2011","gender":"Women","family":"","type":"Edp","top":["Pear","Mandarin Orange","Green Notes"],"mid":["Orchid"],"base":["Toffee","Patchouli"]},{"brand":"Jimmy Choo","name":"Jimmy Choo Eau de Toilette","launched":"2012","gender":"Women","family":"","type":"Edt","top":["Pear","Green Notes","Ginger"],"mid":["Taif Rose","Orchid"],"base":["Woody Notes","Virginia Cedar"]},{"brand":"Jimmy Choo","name":"Jimmy Choo Fever","launched":"2018","gender":"Women","family":"","type":"Edp","top":["Plum","Lychee","Grapefruit"],"mid":["Heliotrope","Vanilla Orchid","Jasmine","Orange Blossom"],"base":["Tonka Bean","Benzoin","Sandalwood","Coffee","Hazelnut","Vanilla"]},{"brand":"Jimmy Choo","name":"Jimmy Choo Floral","launched":"2019","gender":"Women","family":"","type":"Edt","top":["Nectarine","Tangerine","Bergamot"],"mid":["Magnolia","Apricot Blossom","Sweet Pea"],"base":["Musk","Ambroxan","Woody Notes"]},{"brand":"Jimmy Choo","name":"Jimmy Choo L'Eau","launched":"2017","gender":"Women","family":"","type":"Edt","top":["Hibiscus","Bergamot"],"mid":["Peony","Nectarine"],"base":["Musk","Cedar"]},{"brand":"Jimmy Choo","name":"Jimmy Choo Rose Passion","launched":"2023","gender":"Women","family":"","type":"Edp","top":["Frangipani","Jasmine"],"mid":["Coconut Milk","Orchid"],"base":["Vanilla","Sandalwood"]},{"brand":"Jimmy Choo","name":"Jimmy Choo Blossom","launched":"2015","gender":"Women","family":"","type":"Edp","top":["Raspberry","Red Berries","Citrus"],"mid":["Sweet Pea","Rose"],"base":["White Musk","Sandalwood"]},{"brand":"Jimmy Choo","name":"Urban Hero Gold Edition","launched":"2021","gender":"Men","family":"","type":"Edp","top":["Pineapple","Blood Orange"],"mid":["Tonka Bean","Lavender"],"base":["Sandalwood","Oakmoss"]},{"brand":"Jimmy Choo","name":"Jimmy Choo Man","launched":"2014","gender":"Men","family":"Aromatic Fruity","type":"Edt","top":["Melon","Pineapple Leaf","Lavender"],"mid":["Pink Pepper"],"base":["Suede","Lavender","Patchouli"]},{"brand":"Jimmy Choo","name":"Jimmy Choo Man Blue","launched":"2018","gender":"Men","family":"Woody Aromatic","type":"Edt","top":["Lavender","Black Pepper","Clary Sage","Bergamot"],"mid":["Ambergris","Leather","Cypress","Apple","Pineapple"],"base":["Vanilla","Sandalwood","Vetiver","Patchouli"]},{"brand":"Jimmy Choo","name":"Jimmy Choo Man Ice","launched":"2017","gender":"Men","family":"","type":"Edt","top":["Mandarin","Bergamot","Citron"],"mid":["Vetiver","Patchouli","Apple","Cedar"],"base":["Musk","Moss","Ambroxan"]},{"brand":"Jimmy Choo","name":"Jimmy Choo Man Extreme","launched":"2024","gender":"Men","family":"Woody Aromatic","type":"Edp","top":["Red Thyme","Black Pepper"],"mid":["Geranium","Sage","Nutmeg"],"base":["Woody Notes"]},{"brand":"Juicy Couture","name":"Viva La Juicy","launched":"2008","gender":"Women","family":"","type":"Edp","top":["Wild Berries","Mandarin Orange"],"mid":["Honeysuckle","Gardenia","Jasmine"],"base":["Caramel","Praline","Vanilla","Amber","Sandalwood"]},{"brand":"Kate Spade","name":"Cherie Je Taime","launched":"2025","gender":"Women","family":"Floral","type":"Edp","top":["Passionfruit","Jasmine"],"mid":["Orange Blossom","Mimosa","Cashmeran"],"base":["Tonka Bean","Cedarwood","Coconut Milk","Petitgrain"]},{"brand":"Kate Spade","name":"New York","launched":"2020","gender":"Women","family":"Fruity","type":"Edp","top":["Citrus","Bergamot","Wild Strawberry"],"mid":["Rose","Freesia"],"base":["Ambroxan","Cashmeran"]},{"brand":"Kate Spade","name":"Sparkle","launched":"2022","gender":"Women","family":"Floral","type":"Edp Intense","top":["Black Currant","Pink Peppercorn"],"mid":["Peony","Hawthorn"],"base":["Vanilla","Cedarwood","Crème Brulee"]},{"brand":"Kate Spade","name":"Pop","launched":"2025","gender":"Women","family":"Floral","type":"Edp","top":["Tangerine","Raspberry","Orange"],"mid":["Cvoconut","Jasmine","Lily-of-the-Valley"],"base":["Cedarwood","White Musk","Benzoin"]},{"brand":"Kate Spade","name":"Bloom","launched":"2024","gender":"Women","family":"Floral","type":"Edt","top":["Granny Smith Apple","Lemon","Sweet Orange"],"mid":["White Camelia","Orange Flower","Ylang Ylang"],"base":["Cedarwood","Cashmeran","Sandalwood"]},{"brand":"Kate Spade","name":"Cherie","launched":"2023","gender":"Women","family":"Floral Woody Musk","type":"Edp","top":["Raspberry","Red Currant","Mandarin Orange"],"mid":["Sweet Pea","Jasmine"],"base":["White Woods","Musk"]},{"brand":"Kenneth Cole","name":"Mankind Rise","launched":"2022","gender":"Men","family":"","type":"Edt","top":["Mandarin Orange","Eucalyptus","Australian Blue Cypress"],"mid":["Apple","Tonka","Ginger"],"base":["Cedarwood","Haitian Vetiver","Sandalwood"]},{"brand":"Kenzo","name":"L'Eau Pure","launched":"2025","gender":"Unisex","family":"","type":"Edp","top":["Mandarin","Lemon"],"mid":["Aquozone","Lavender"],"base":["White Musk","Sandalwood"]},{"brand":"Lacoste","name":"Blanc Eau de Toilette","launched":"2021","gender":"Men","family":"","type":"Edt","top":["Green Notes","Finger Lime"],"mid":["Eucalyptus","Ylang-Ylang"],"base":["Pine Tree","Cedar"]},{"brand":"Lacoste","name":"Noir Eau de Toilette","launched":"2013","gender":"Men","family":"","type":"Edt","top":["Watermelon"],"mid":["Basil","Verbena","Lavender"],"base":["Dark Chocolate","Cashmeran","Coumarin","Patchouli"]},{"brand":"Liz Claiborne","name":"Liz Claiborne","launched":"1986","gender":"Women","family":"","type":"Edt","top":["Marigold","Freesia","Carnation","Peach","Green Notes","Bergamot","Mandarin Orange","Mandarin"],"mid":["Lilac","Tuberose","Narcissus","Jasmine","Rose","Violet","Lily-of-the-Valley","Ylang-Ylang"],"base":["Oakmoss","Sandalwood","Musk","Amber"]},{"brand":"Marc Jacobs","name":"Honey","launched":"2013","gender":"Women","family":"","type":"Edp","top":["Pear","Punch","Mandarin"],"mid":["Honeysuckle","Peach","Orange Blossom"],"base":["Honey","Vanilla","Woodsy Notes"]},{"brand":"Marc Jacobs","name":"Dot","launched":"2012","gender":"Women","family":"","type":"Edp","top":["Red Berries","Dragon Fruit","Honeysuckle"],"mid":["Coconut","Jasmine","Orange Blossom"],"base":["Driftwood","Musk","Vanilla"]},{"brand":"Marc Jacobs","name":"Daisy Dream","launched":"2014","gender":"Women","family":"","type":"Edt","top":["Blackberry","Grapefruit","Pear"],"mid":["Wisteria","Jasmine","Litchi"],"base":["Woodsy Notes","Musk","Coconut"]},{"brand":"Marc Jacobs","name":"Daisy Love","launched":"2018","gender":"Women","family":"","type":"Edt","top":["Cloudberry"],"mid":["Daisy"],"base":["Cashmere Musk","Driftwood"]},{"brand":"Marc Jacobs","name":"Daisy Eau So Fresh","launched":"2011","gender":"Women","family":"","type":"Edt","top":["Grapefruit","Green Notes","Raspberry","Pear"],"mid":["Jasmine","Rose","Violet","Litchi","Apple Blossom"],"base":["Musk","Virginia Cedar","Plum"]},{"brand":"Mercedes-Benz","name":"Mercedes-Benz Air","launched":"2023","gender":"Men","family":"","type":"Edp","top":["Petitgrain","Wormwood"],"mid":["Angelica"],"base":["Turmeric","Patchouli","Woodsy Notes"]},{"brand":"Mercedes-Benz","name":"Mercedes-Benz Land","launched":"2023","gender":"Men","family":"","type":"Edp","top":["Black Pepper","Rosemary"],"mid":["Cocoa","Fir Balsam","Geranium"],"base":["Woodsy Notes","Patchouli","Tonka"]},{"brand":"Mercedes-Benz","name":"Mercedes-Benz Sea","launched":"2023","gender":"Men","family":"","type":"Edp","top":["Tangerine"],"mid":["Violet Leaf","Floral Notes"],"base":["Woodsy Notes","Patchouli"]},{"brand":"Mercedes-Benz","name":"Mercedes-Benz Sign Your Attitude","launched":"2022","gender":"Men","family":"","type":"Edt","top":["Bergamot","Mandarin Orange","Ginger"],"mid":["Lavender","Cypress","Nutmeg","Cinnamon"],"base":["Amber","Cetalox"]},{"brand":"Mercedes-Benz","name":"Mercedes-Benz Sign","launched":"2021","gender":"Men","family":"","type":"Edp","top":["Cardamom","Violet Leaf","Pink Pepper"],"mid":["Orange Blossom","Lavender","Geranium"],"base":["Cashmere Wood","Patchouli","Tonka Bean"]},{"brand":"Mercedes-Benz","name":"Mercedes-Benz Ultimate","launched":"2022","gender":"Men","family":"Oriental Woody","type":"Edp","top":["Lavender","Cedar Needles"],"mid":["Apple","Nutmeg","Mandarin Orange"],"base":["Sandalwood","Amber","Cypress","Patchouli"]},{"brand":"Mercedes-Benz","name":"Mercedes-Benz Man","launched":"2015","gender":"Men","family":"Aromatic","type":"Edt","top":["Pear","Ambrette (Musk Mallow)"],"mid":["Cedar","Geranium"],"base":["Oakmoss","Palisander Rosewood"]},{"brand":"Mercedes-Benz","name":"Mercedes-Benz Man Blue","launched":"2017","gender":"Men","family":"Woody Aromatic","type":"Edt","top":["Bergamot","Pepper"],"mid":["Lavender","Tonka Bean"],"base":["Musk","Amber"]},{"brand":"Mercedes-Benz","name":"Mercedes-Benz Man Intense","launched":"2020","gender":"Men","family":"","type":"Edt","top":["Ambrette (Musk Mallow)","Pear Leaf"],"mid":["Oakmoss","Geranium"],"base":["Ambroxan","Patchouli","Amber"]},{"brand":"Messi","name":"MESSI Platinum","launched":"2025","gender":"Men","family":"Amber","type":"Edp","top":["Aquatic Notes","Bergamot","Green Coconut"],"mid":["Lavender","Violet Leaf","Clary Sage"],"base":["Amber Resin","Mineral Notes","Teakwood","Vetiver"]},{"brand":"Messi","name":"MESSI","launched":"2024","gender":"Men","family":"Fresh","type":"Edp","top":["Cardamom","Apple Leaf","Cypress"],"mid":["Orris Root","Lavender","Leather"],"base":["Vanilla Bean","Virginian Cedarwood","Patchouli"]},{"brand":"Michel Germain","name":"Sugarful","launched":"2019","gender":"Women","family":"Floral Fruity Gourmand","type":"Edp","top":["Tangerine","Wild Strawberry"],"mid":["Pink Peony","Cotton Candy"],"base":["Musk","Sandalwood"]},{"brand":"Michel Germain","name":"Sugarful Dream","launched":"2021","gender":"Women","family":"Floral Fruity Gourmand","type":"Edp","top":["Blueberry","Strawberry","Pink Grapefruit"],"mid":["Lavender","Star Jasmine","Passion Flower"],"base":["Musk","Amber","Vanilla"]},{"brand":"Michel Germain","name":"Sugarful Sunshine","launched":"2023","gender":"Women","family":"","type":"Edp","top":["Pineapple","Mango","Lime"],"mid":["Frangipani","Coconut Water"],"base":["Amber","Agave","Moss"]},{"brand":"Michel Germain","name":"Sugarful Gold","launched":"2025","gender":"Women","family":"","type":"Edp","top":["Grapefruit","Raspberry","Strawberry"],"mid":["Vanilla Sugar","Jasmine","Orange Blossom"],"base":["Caramel","Sandalwood","Musk"]},{"brand":"Michel Germain","name":"Sexual Steel pour Homme","launched":"2013","gender":"Men","family":"","type":"Edt","top":["Ginger","Bergamot","Rhubarb"],"mid":["Lavender","Nutmeg","Black Pepper"],"base":["Leather","Metallic Notes","Musk"]},{"brand":"Michel Germain","name":"Sexual Noir","launched":"2012","gender":"Men","family":"Aromatic Fougere","type":"","top":["Cardamom","Grapefruit","Bergamot"],"mid":["Orange Blossom","Lavender","Honey","Musk","Coriander"],"base":["Tobacco","Tonka Bean","Moss"]},{"brand":"Michel Germain","name":"Sexual Noir for Women","launched":"2013","gender":"Women","family":"","type":"Edp","top":["Strawberry","Lime","Mandarin Orange"],"mid":["Orchid","Patchouli","Sweet Pea","Jasmine"],"base":["Vanilla","Vetiver","Amber","Sandalwood"]},{"brand":"Michel Germain","name":"Sexual Noir Intense","launched":"","gender":"Men","family":"","type":"","top":["Not Found"],"mid":["Not Found"],"base":["Not Found"]},{"brand":"Michel Germain","name":"Sexual Noir Intense for Women","launched":"","gender":"Women","family":"","type":"","top":["Mandarin","Strawberry","Lime"],"mid":["Patchouli","Orchid","Jasmine","Pink Sweet Pea"],"base":["Vanilla","Amber","Vetiver","Sandalwood"]},{"brand":"Montblanc","name":"Starwalker","launched":"2005","gender":"Men","family":"","type":"Edt","top":["Bamboo","Bergamot","Mandarin Orange"],"mid":["Sandalwood","White Musk","Cedar"],"base":["Ginger","Fir Resin","Nutmeg","Amber"]},{"brand":"Montblanc","name":"Legend","launched":"2011","gender":"Men","family":"","type":"Edt","top":["Lavender","Pineapple","Bergamot","Lemon Verbena"],"mid":["Red Apple","Dried Fruits","Oakmoss","Geranium","Coumarin","Rose"],"base":["Tonka Bean","Sandalwood"]},{"brand":"Montblanc","name":"Legend Red","launched":"2022","gender":"Men","family":"","type":"Edp","top":["Blood Orange","Grapefruit","Cardamom"],"mid":["Cedar","Clary Sage","Juniper Berries"],"base":["Atlas Cedar","Mahogany","Tonka Bean"]},{"brand":"Nautica","name":"Blue","launched":"2005","gender":"Men","family":"Aromatic Aquatic","type":"Edt","top":["Pineapple","Bergamot","Peach"],"mid":["Water Lily","Jasmine"],"base":["Sandalwood","Musk","Cedar"]},{"brand":"Nautica","name":"Voyage","launched":"2006","gender":"Men","family":"Woody Aquatic","type":"Edt","top":["Green Leaves","Apple"],"mid":["Lotus","Mimosa"],"base":["Musk","Cedar","Oakmoss","Amber"]},{"brand":"Nautica","name":"Midnight Voyage","launched":"2020","gender":"Men","family":"Aromatic Spicy","type":"Edt","top":["Mint"],"mid":["Pink Pepper"],"base":["Amber"]},{"brand":"Nicki Minaj","name":"Pink Friday 2","launched":"2023","gender":"Women","family":"","type":"","top":["Nectarine","Pineapple","Solar Notes"],"mid":["Damask Rose","Mimosa","African Orange Flower"],"base":["Musk","Amber","Tonka Bean"]},{"brand":"Oscar de la Renta","name":"Bella Rosa","launched":"2018","gender":"Women","family":"","type":"Edp","top":["Pink Pepper","Freesia","Mandarin"],"mid":["Pink Rose","Jasmine","Orris"],"base":["Patchouli","Sandalwood","Amber"]},{"brand":"Oscar de la Renta","name":"Bella Blanca","launched":"2019","gender":"Women","family":"","type":"Edp","top":["Pear","Lily-of-the-Valley","Green Leaves"],"mid":["Jasmine","Tuberose","Orange Blossom","Rose"],"base":["Musk","White Iris","Sandalwood"]},{"brand":"Oscar de la Renta","name":"Bella Essence","launched":"2020","gender":"Women","family":"","type":"Edp","top":["Raspberry","Red Currant","Grapefruit"],"mid":["Vanilla","Rose","Jasmine"],"base":["Ambroxan","Patchouli","Musk"]},{"brand":"Oscar de la Renta","name":"Bella Bouquet","launched":"2022","gender":"Women","family":"","type":"Edp","top":["Bamboo","Clementine","Peach","Green Tea"],"mid":["Magnolia","Jasmine Sambac","Iris","Rose"],"base":["Musk","Sandalwood","Cedar","Tonka Bean"]},{"brand":"Oscar de la Renta","name":"Alibi Eau So Charming","launched":"2024","gender":"Women","family":"","type":"Edt","top":["Bergamot","Wild Berries"],"mid":["Rose de Mai","Jasmine Sambac","Orange Blossom","Iris","Mugane"],"base":["Tonka Bean","Praline","Patchouli","Amberwood"]},{"brand":"Oscar de la Renta","name":"Alibi Eau So Chic","launched":"2024","gender":"Women","family":"","type":"Edt","top":["Mandarin Orange","Ginger","Petitgrain"],"mid":["Jasmine Sambac","Magnolia","Nectarine"],"base":["Musk","Cedar","Amber"]},{"brand":"Oscar de la Renta","name":"Alibi Eau So Lucky","launched":"2024","gender":"Women","family":"","type":"Edt","top":["Green Pear","Green Apple","Cardamom","Green Tea"],"mid":["Rose","Peony","Clary Sage","Mugane"],"base":["Cedarwood","Moss","Musk","Praline"]},{"brand":"Paco Rabanne","name":"Fame","launched":"2022","gender":"Women","family":"Floral Woody Musk","type":"Edp","top":["Mango","Bergamot"],"mid":["Jasmine","Incense"],"base":["Sandalwood","Vanilla"]},{"brand":"Paco Rabanne","name":"Fame Parfum","launched":"2023","gender":"Women","family":"Floral Fruity Gourmand","type":"Parfum","top":["Mango","Pink Pepper","Bergamot"],"mid":["Jasmine","Patchouli","Incense"],"base":["Musk","Benzoin","Sandalwood","Helvetolide"]},{"brand":"Paco Rabanne","name":"Invictus","launched":"2013","gender":"Men","family":"Woody Aquatic","type":"Edt","top":["Grapefruit","Marine Notes","Mandarin Orange"],"mid":["Bay Leaf","Jasmine"],"base":["Guaiac Wood","Oakmoss","Patchouli","Ambergris"]},{"brand":"Paco Rabanne","name":"Invictus Parfum","launched":"2024","gender":"Men","family":"","type":"Parfum","top":["Marine Notes","Lavender","Pink Pepper"],"mid":["Soap","Violet Leaf","Myrtle"],"base":["Musk","Cashmeran","Sandalwood"]},{"brand":"Paco Rabanne","name":"Lady Million","launched":"2010","gender":"Women","family":"Floral Fruity","type":"Edp","top":["Raspberry","Amalfi Lemon","Neroli"],"mid":["Jasmine","African Orange Flower","Gardenia"],"base":["Patchouli","White Honey","Amber"]},{"brand":"Paco Rabanne","name":"Million Gold for Her","launched":"2024","gender":"Women","family":"","type":"Edp","top":["Rose","Pear","Lavender"],"mid":["Ylang-Ylang","Jasmine"],"base":["Musk","Vanilla","Moss"]},{"brand":"Paco Rabanne","name":"One Million","launched":"2008","gender":"Men","family":"Woody Spicy","type":"Edt","top":["Blood Mandarin","Grapefruit","Mint"],"mid":["Cinnamon","Spicy Notes","Rose"],"base":["Amber","Leather","Woody Notes","Indian Patchouli"]},{"brand":"Paco Rabanne","name":"1 Million Royal","launched":"2023","gender":"Men","family":"","type":"Parfum","top":["Tangerine","Bergamot","Cardamom"],"mid":["Violet Leaf","Lavender","Sage"],"base":["Benzoin","Cedarwood","Patchouli"]},{"brand":"Paco Rabanne","name":"1 Million Elixir","launched":"2022","gender":"Men","family":"","type":"Parfum Intense","top":["Davana","Apple"],"mid":["Damask Rose","Osmanthus","Cedar"],"base":["Vanilla Absolute","Tonka Bean","Patchouli"]},{"brand":"Paco Rabanne","name":"Invictus Victory Elixir","launched":"2023","gender":"Men","family":"","type":"Parfum Intense","top":["Lavender","Cardamom","Black Pepper"],"mid":["Incense","Patchouli"],"base":["Vanilla Pod","Tonka Bean"]},{"brand":"Paco Rabanne","name":"Phantom Parfum","launched":"2023","gender":"Men","family":"","type":"Parfum","top":["Bergamot","Lemon","Rhubarb","Cardamom"],"mid":["Lavender","Geranium","Patchouli","Cedarwood"],"base":["Vanilla","Tolu Balsam","Vetiver"]},{"brand":"Paco Rabanne","name":"Phantom Elixir","launched":"2025","gender":"Men","family":"","type":"Parfum Intense","top":["Sea Notes"],"mid":["Mineral Notes","Oud"],"base":["Vanilla Bean"]},{"brand":"Paco Rabanne","name":"Phantom Intense","launched":"2024","gender":"Men","family":"","type":"Edp","top":["Cardamom","Lemon","Bergamot","Rhubarb"],"mid":["Lavender","Cedar","Geranium","Patchouli"],"base":["Vanilla","Tolu Balsam","Vetiver"]},{"brand":"Perry Ellis","name":"Bold Red","launched":"2020","gender":"Men","family":"Oriental Spicy","type":"Edt","top":["Finger Lime","Red Apple"],"mid":["Black Pepper","Ginger","Green Leaves"],"base":["Mahogany","Musk","Tonka Bean"]},{"brand":"Perry Ellis","name":"Pure Blue","launched":"2018","gender":"Men","family":"Aromatic Fougere","type":"Edt","top":["Grapefruit","Bergamot","Apple"],"mid":["Green Notes","Cardamom","Watery Notes"],"base":["Moss","Musk","Amber","Sandalwood"]},{"brand":"Perry Ellis","name":"Midnight","launched":"2021","gender":"Men","family":"Oriental","type":"Edt","top":["Amber","Mandarin Orange","Cinnamon"],"mid":["Rosemary","Geranium","Orange Blossom"],"base":["Vanilla","Tonka Bean","Amber"]},{"brand":"Perry Ellis","name":"Sky","launched":"2022","gender":"Men","family":"","type":"Edt","top":["Bergamot","Lime","Mint","Lavender"],"mid":["Aquatic Notes","Violet Leaf","Labdanum","Pamplewood"],"base":["Sandalwood","Patchouli","Cedarwood","Ambroxan"]},{"brand":"Perry Ellis","name":"Red Sky","launched":"2023","gender":"Men","family":"Woody Aromatic","type":"Edt","top":["Juniper","Bergamot","Cardamom"],"mid":["Lavender","Rosemary","Nutmeg"],"base":["Vetiver","Cedarwood","Tonka Bean"]},{"brand":"Perry Ellis","name":"Night Sky","launched":"2024","gender":"Men","family":"Woody Aromatic","type":"Edt","top":["Star Anise","Cardamom","Pear","Bergamot","Salt"],"mid":["Lavender","Geranium","Moss","Fig Leaf"],"base":["Bourbon Vanilla","Patchouli","Bourbon Vetiver"]},{"brand":"Philosophy","name":"Amazing Grace","launched":"1996","gender":"Women","family":"","type":"Edt","top":["Bergamot","Grapefruit","Mandarin Orange"],"mid":["Freesia","Jasmine","Rose"],"base":["Musk"]},{"brand":"Philosophy","name":"Amazing Grace Eau de Parfum","launched":"2003","gender":"Women","family":"","type":"Edp","top":["Bergamot"],"mid":["Muguet Blossoms"],"base":["Musk"]},{"brand":"Philosophy","name":"Pure Grace","launched":"2003","gender":"Women","family":"Floral Green","type":"Edt","top":["Lavender","Bergamot"],"mid":["Water Lily","Jasmine"],"base":["Musk"]},{"brand":"Philosophy","name":"Pure Grace Eau de Parfum","launched":"2020","gender":"Women","family":"Floral Green","type":"Edp","top":["Bergamot","Lemon","Neroli","Lavender"],"mid":["Orange Blossom","Lily-of-the-Valley","Rose","Jasmine"],"base":["Musk"]},{"brand":"Ralph Lauren","name":"Polo 67","launched":"2024","gender":"Men","family":"","type":"Edt","top":["Bergamot","Pineapple","Lemon"],"mid":["Sage","Juniper","Rosehip"],"base":["Vetiver","Goldenrod","Patchouli"]},{"brand":"Ralph Lauren","name":"Polo 67 Eau de Parfum","launched":"2025","gender":"Men","family":"","type":"Edp","top":["Green Mandarin","Bergamot","Cardamom"],"mid":["Pineapple","Lavender","Cypress","Sesame"],"base":["Cedarwood","Benzoin","Vetiver"]},{"brand":"Ralph Lauren","name":"Polo Blue","launched":"2003","gender":"Men","family":"","type":"Edt","top":["Cucumber","Melon","Mandarin Orange"],"mid":["Basil","Sage","Geranium"],"base":["Suede","Woodsy Notes","Musk"]},{"brand":"Ralph Lauren","name":"Polo Blue Eau de Parfum","launched":"2016","gender":"Men","family":"","type":"Edp","top":["Sea Notes","Bergamot","Cardamom"],"mid":["Basil","Verbena","Clary Sage","Orris"],"base":["Suede","Vetiver","Woodsy Notes","Patchouli"]},{"brand":"Ralph Lauren","name":"Polo Blue Parfum","launched":"2022","gender":"Men","family":"","type":"Parfum","top":["Mandarin Orange","Pink Pepper","Cardamom"],"mid":["Clary Sage","Lavender","Vetiver","Jasmine"],"base":["Oak","Olibanum","Patchouli"]},{"brand":"Ralph Lauren","name":"Polo Red","launched":"2013","gender":"Men","family":"","type":"Edt","top":["Cranberry","Grapefruit","Italian Lemon"],"mid":["Saffron","Sage"],"base":["Amber","Coffee","Woodsy Notes"]},{"brand":"Ralph Lauren","name":"Polo Red Eau de Parfum","launched":"2020","gender":"Men","family":"","type":"Edp","top":["Ginger","Cranberry","Pink Grapefruit"],"mid":["Clary Sage","Labdanum","Lavender"],"base":["Benzoin","Opoponax","Guaiac Wood","Musk","Cedar"]},{"brand":"Ralph Lauren","name":"Polo Red Parfum","launched":"2023","gender":"Men","family":"","type":"Parfum","top":["Bergamot","Blood Orange","Pink Pepper"],"mid":["Absinthe","Lavender","Orris"],"base":["Musk","Cedar","Opoponax"]},{"brand":"Ralph Lauren","name":"Ralph's Club Eau de Parfum","launched":"2021","gender":"Men","family":"","type":"Edp","top":["Lavender","Clary Sage"],"mid":["Virginia Cedar"],"base":["Vetiver"]},{"brand":"Ralph Lauren","name":"Ralph's Club Eau de Toilette","launched":"2024","gender":"Men","family":"","type":"Edt","top":["Mandarin","Apple","Grapefruit"],"mid":["Clary Sage","Lily-of-the-Valley","Geranium","Lavender"],"base":["Vetiver","Musk","Patchouli","Cashmeran"]},{"brand":"Ralph Lauren","name":"Ralph's Club Parfum","launched":"2022","gender":"Men","family":"","type":"Parfum","top":["Lavender","Apple","Grapefruit"],"mid":["Clary Sage","Geranium","Orange Blossom"],"base":["Vetiver","Virginia Cedar","Patchouli","Cashmeran"]},{"brand":"Ralph Lauren","name":"Ralph's Club Elixir","launched":"2023","gender":"Men","family":"","type":"Parfum Intense","top":["Cardamom","Grapefruit","Green Mandarin"],"mid":["Orris","Lavender","Sage","Geranium"],"base":["Leather","Patchouli","Olibanum","Fir"]},{"brand":"Ralph Lauren","name":"Romance","launched":"1998","gender":"Women","family":"","type":"Edp","top":["Rose","Ginger","Chamomile","Lemon","Yellow Freesia"],"mid":["Lily","Lotus","White Violet","Carnation"],"base":["White Musk","Oakmoss","Exotic Woods","Patchouli"]},{"brand":"Ralph Lauren","name":"Beyond Romance","launched":"2019","gender":"Women","family":"","type":"Edp","top":["Raspberry","Mandarin","Bergamot"],"mid":["Rose de Mai","Jasmine","Lily-of-the-Valley"],"base":["Vanilla","Cashmeran","White Musk"]},{"brand":"Ralph Lauren","name":"Romance Eau de Parfum Intense","launched":"2023","gender":"Women","family":"","type":"Edp","top":["Black Currant","Green Mandarin","Bergamot"],"mid":["Rose","Lily-of-the-Valley","Violet Leaves","Marigold","Ylang-Ylang"],"base":["Cedarwood","Sandalwood","Vanila","Patchouli"]},{"brand":"Ralph Lauren","name":"Romance Elixir","launched":"2024","gender":"Women","family":"","type":"Parfum  Intense","top":["Lychee","Pink Pepper","Mandarin Orange","Bergamot"],"mid":["Rose","Raspberry","Violet","Elemi resin"],"base":["Benzoin","Patchouli","Vanilla"]},{"brand":"Rebecca Minkoff","name":"Rebecca Minkoff","launched":"2020","gender":"Women","family":"","type":"Edp","top":["Cardamom","Coriander","Bergamot"],"mid":["Tobacco","Jasmine","Amyl Salicylate"],"base":["Tonka Bean","Patchouli","Leather","Labdanum"]},{"brand":"Rebecca Minkoff","name":"Rebecca Minkoff Blush","launched":"2021","gender":"Women","family":"","type":"Edp","top":["Italian Mandarin","Black Currant","Bergamot"],"mid":["Orange Blossom","Jasmine","Pear Blossom"],"base":["Cedarwood","Haitian Vetiver","Tonka Bean"]},{"brand":"Sabrina Carpenter","name":"Sweet Tooth","launched":"2022","gender":"Women","family":"Sweet","type":"Edp","top":["Marshmallow","Candied Ginger","Chocolate","Bergamot"],"mid":["Madagascar Vanilla","Coconut Milk","Jasmine"],"base":["Whipped Cream","Sugar","Musk","Cashmere Wood"]},{"brand":"Sabrina Carpenter","name":"Caramel Dream","launched":"2023","gender":"Women","family":"Sweet","type":"Edp","top":["Sugar","Orange","Almond Milk","Freesia","Lemon"],"mid":["Dark Chocolate","Vanilla","Orange Blossom","Orchid"],"base":["Caramel","Patchouli","Sandalwood","Musk","Amber"]},{"brand":"Sabrina Carpenter","name":"Cherry Baby","launched":"2024","gender":"Women","family":"Amber","type":"Edp","top":["Cherry","Brown Sugar","Plum","Apple"],"mid":["Dark Chocolate","Red Poppy","Vanilla Orchid","Peony"],"base":["Musk","Cashmere Wood","Amber","Patchouli","Resin"]},{"brand":"Sabrina Carpenter","name":"Me Espresso","launched":"2024","gender":"Women","family":"Sweet","type":"Edp","top":["Espresso","Cappuchino","Cocoa"],"mid":["Biscuit","Jasmine","Vanilla Orchid"],"base":["Whipped Cream","Caramel","Amber"]},{"brand":"Shakira","name":"Rojo","launched":"2023","gender":"Women","family":"","type":"Edp","top":["Raspberry","Black Currant","Lemon"],"mid":["Ginger","Cardamom","Narcissus","Ylang-Ylang","Pink Pepper"],"base":["Solar Notes","Ambergris","Cedar"]},{"brand":"Shakira","name":"Fucsia","launched":"2024","gender":"Women","family":"","type":"Edp","top":["Pear","Sorbet","Mandarin","Cassis"],"mid":["Jasmine","Tuberose"],"base":["Sandalwood","Vanilla","Raspberry"]},{"brand":"Shaquille O'Neal","name":"Shaquille O'Neal","launched":"2025","gender":"Men","family":"","type":"Edt","top":["Grapefruit","Black Pepper","Bergamot"],"mid":["Suede","Cardamom","Benzoin"],"base":["Tonka Bean","Amber","Musk"]},{"brand":"Solinotes","name":"Amande","launched":"2021","gender":"Unisex","family":"","type":"Edp","top":["Almond","Passion Fruit"],"mid":["Jasmine","Tonka Bean"],"base":["Vanilla","Sandalwood"]},{"brand":"Solinotes","name":"Cerisier (Cherry Blossom)","launched":"2013","gender":"Unisex","family":"","type":"Edp","top":["Lemon","Cardamom","Mandarin Orange"],"mid":["Cherry","Raspberry","Rose"],"base":["Musk","Apple"]},{"brand":"Solinotes","name":"Grenade (Pomegranate)","launched":"2017","gender":"Unisex","family":"","type":"Edp","top":["Citrus"],"mid":["Pomegranate","Raspberry","Blackberry"],"base":["Musk"]},{"brand":"Solinotes","name":"Osmanthus","launched":"2024","gender":"Unisex","family":"","type":"Edp","top":["Quince","Pear"],"mid":["Osmanthus","Freesia","Hyacinth"],"base":["Cedar","Amber"]},{"brand":"Solinotes","name":"Rose","launched":"2017","gender":"Unisex","family":"","type":"Edp","top":["Bergamot","Litchi"],"mid":["Rose","Magnolia"],"base":["Cedar"]},{"brand":"Solinotes","name":"Vanille","launched":"2010","gender":"Unisex","family":"","type":"Edp","top":["Vanilla"],"mid":["White Flowers"],"base":["Tonka Bean","White Musk"]},{"brand":"Stetson","name":"Stetson Spirit","launched":"2021","gender":"Men","family":"","type":"Cologne","top":["Bergamot","Mandarin","Rhubarb","Elemi"],"mid":["Clary Sage","Labdanum","Leather","Wild Lavender"],"base":["Amber","Sandalwood","Musk","Virginia Cedar"]},{"brand":"Stetson","name":"Stetson Legend","launched":"2023","gender":"Men","family":"","type":"Cologne","top":["Bergamot","Prickly Pear","Black Pepper","Smoke","Grapefruit"],"mid":["Leather","Sage","Mesquite Wood","Moss"],"base":["Cedarwood","Tonka Bean","Sandalwood","Vetiver"]},{"brand":"Tous","name":"Kaos","launched":"2025","gender":"Women","family":"","type":"Edp","top":["Red Fruits","Sorbet","Bergamot","Lemon","Pear"],"mid":["Peach","Jasmine Sambac","Rose"],"base":["White woods","White Musk","Moss","Praline"]},{"brand":"Tous","name":"LoveMe","launched":"2020","gender":"Women","family":"","type":"Edp","top":["Pink Grapefruit","Pink Pepper","Pink Litchi"],"mid":["Peony","Damask Rose","Jasmine"],"base":["Cedar","Cashmere Wood","Moss"]},{"brand":"Tous","name":"LoveMe The Onyx Parfum","launched":"2021","gender":"Women","family":"","type":"Parfum","top":["Hazelnut","Grapefruit","Peony"],"mid":["Heliotrope","Black Orchid"],"base":["Vanilla","Sandalwood","Vetiver"]},{"brand":"Tous","name":"LoveMe The Emerald Elixir","launched":"2023","gender":"Women","family":"","type":"Parfum Intense","top":["Pear","Sweet Orange","Grapefruit"],"mid":["Jasmine","Honeysuckle","Violet"],"base":["Patchouli","Vanilla","Musk"]},{"brand":"Tous","name":"LoveMe The Amethyst Elixir","launched":"2026","gender":"Women","family":"","type":"Parfum Intense","top":["Orange Blossom","Black Cherry","Ginger"],"mid":["Peony","Syringa","Floral Notes","Akigalwood"],"base":["Tonka Bean","Cedarwood","Cedar","Musk"]},{"brand":"TUMI","name":"Awaken","launched":"2020","gender":"Men","family":"","type":"Edp","top":["Bergamot","Grapefruit","Coriander"],"mid":["Cypress","Fir Needle","Clary Sage"],"base":["Olibanum","Patchouli","Cedarwood"]},{"brand":"TUMI","name":"Awaken Distilled","launched":"2024","gender":"Men","family":"Woody Aromatic","type":"Parfum","top":["Bergamot","Mandarin","Coriander"],"mid":["Lavender","Clary Sage","Fir Needle"],"base":["Cedarwood","Patchouli","Amberwood"]},{"brand":"TUMI","name":"19 Degree","launched":"2023","gender":"Men","family":"Leather","type":"Parfum","top":["Bergamot","Saffron","Thyme"],"mid":["Raspberry","Suede","Birch"],"base":["Leather","Musk","Sandalwood"]},{"brand":"TUMI","name":"Unwind","launched":"2020","gender":"Men","family":"","type":"Edp","top":["Ginger","Lemon"],"mid":["Sage","Lavender","Geranium"],"base":["Sandalwood","Vetiver","Oud"]},{"brand":"TUMI","name":"Atlas","launched":"2022","gender":"Men","family":"Woody Spicy","type":"Edp","top":["Bergamot","Grapefruit","Cardamom","Amberwood"],"mid":["Ginger","Geranium","Labdanum"],"base":["Vetiver","Sandalwood","Moss","Java Vetiver Oil"]},{"brand":"TUMI","name":"Kinetic","launched":"2022","gender":"Men","family":"","type":"Edp","top":["Pimento Leaf","Italian Mandarin","Amberwood"],"mid":["Olibanum","Nutmeg","Immortelle"],"base":["Sandalwood","Teakwood","Smoke","Vanilla"]},{"brand":"Versace","name":"Bright Crystal","launched":"2006","gender":"Women","family":"","type":"Edt","top":["Yuzu","Pomegranate","Ice"],"mid":["Peony","Lotus","Magnolia"],"base":["Musk","Mahogany","Amber"]},{"brand":"Versace","name":"Bright Crystal Absolu","launched":"2013","gender":"Women","family":"","type":"Edp","top":["Pomegranate","Yuzu","Water Notes"],"mid":["Peony","Raspberry","Lotus","Magnolia"],"base":["Musk","Mahogany","Amber"]},{"brand":"Versace","name":"Crystal Noir","launched":"2004","gender":"Women","family":"","type":"Edp","top":["Pepper","Ginger","Cardamom"],"mid":["Coconut","Gardenia","Orange Blossom","Peony"],"base":["Sandalwood","Musk","Amber"]},{"brand":"Versace","name":"Yellow Diamond","launched":"2011","gender":"Women","family":"","type":"Edt","top":["Amalfi Lemon","Pear","Bergamot","Neroli"],"mid":["Mimosa","Freesia","Water Lily","African Orange Flower"],"base":["Musk","Guaiac Wood","Amber"]},{"brand":"Versace","name":"Dylan Turquoise","launched":"2020","gender":"Women","family":"","type":"Edt","top":["Lemon","Mandarin Orange","Pink Pepper"],"mid":["Guava","Freesia","Cassis","Jasmine"],"base":["Musk","Clearwood","Cedar"]},{"brand":"Versace","name":"Dylan Purple","launched":"2022","gender":"Women","family":"","type":"Edp","top":["Pear","Bitter Orange","Bergamot"],"mid":["Freesia","Pomarose","Mahonial"],"base":["Ambroxan","Iso E Super","Sylkolide","Virginia Cedar","Belambre tree"]},{"brand":"Versace","name":"Dylan Blue","launched":"2017","gender":"Women","family":"","type":"Edp","top":["Black Currant","Granny Smith Apple","Clover","Forget-me-not","Shiso"],"mid":["Peach","Rosehip","Petalia","Rose","Jasmine"],"base":["Musk","Styrax","White Woods","Patchouli"]},{"brand":"Versace","name":"Eros Pour Femme","launched":"2014","gender":"Women","family":"","type":"Edp","top":["Sicilian Lemon","Pomegranate","Calabrian Bergamot"],"mid":["Lemon Blossom","Jasmine Sambac","Jasmine","Peony"],"base":["Musk","Ambroxan","Woodsy Notes","Sandalwood"]},{"brand":"Versace","name":"Eros","launched":"2012","gender":"Men","family":"","type":"Edt","top":["Mint","Green Apple","Lemon"],"mid":["Tonka Bean","Ambroxan","Geranium"],"base":["Madagascar Vanilla","Virginian Cedar","Atlas Cedar","Vetiver","Oakmoss"]},{"brand":"Versace","name":"Eros Energy","launched":"2024","gender":"Men","family":"","type":"Edp","top":["Lemon","Lime","Grapefruit","Blood Orange","Sicilian Bergamot","Mandarin Orange"],"mid":["Pink Pepper","White Amber","Black Currant"],"base":["Musk","Oakmoss","Patchouli"]},{"brand":"Versace","name":"Eros Flame","launched":"2018","gender":"Men","family":"","type":"Edp","top":["Mandarin Orange","Black Pepper","Chinotto","Lemon","Rosemary"],"mid":["Geranium","Rose","Pepperwood"],"base":["Vanilla","Tonka Bean","Sandalwood","Texas Cedar","Patchouli","Oakmoss"]},{"brand":"Versace","name":"Versace Man Eau Fraiche","launched":"2006","gender":"Men","family":"","type":"Edt","top":["Lemon","Bergamot","Carambola (Star Fruit)","Cardamom","Brazilian Rosewood"],"mid":["Cedar","Tarragon","Sage","Pepper"],"base":["Musk","Woodsy Notes","Saffron","Sycamore","Amber"]},{"brand":"Versace","name":"Versace Pour Homme","launched":"2008","gender":"Men","family":"","type":"Edt","top":["Lemon","Bergamot","Neroli","Rose de Mai"],"mid":["Hyacinth","Cedar","Clary Sage","Geranium"],"base":["Tonka Bean","Musk","Amber"]},{"brand":"Versace","name":"Versace Pour Homme Dylan Blue","launched":"2016","gender":"Men","family":"","type":"Edt","top":["Calabrian Bergamot","Grapefruit","Water Notes","Fig Leaf"],"mid":["Ambroxan","Patchouli","Black Pepper","Violet Leaf","Papyrus"],"base":["Incense","Musk","Tonka Bean","Saffron"]},{"brand":"Victor&Rolf","name":"Flowerbomb","launched":"2005","gender":"Women","family":"","type":"Edp","top":["Tea","Bergamot","Osmanthus"],"mid":["Orchid","Jasmine","Rose","Freesia","African Orange Flower"],"base":["Patchouli","Musk","Vanilla"]},{"brand":"Vince Camuto","name":"Amore","launched":"2014","gender":"Women","family":"","type":"Edp","top":["Passion Fruit","Clementine","Bergamot","Cassis"],"mid":["Orchid","Freesia","Lotus","Lily-of-the-Valley"],"base":["Cashmere Wood","Musk","Amber","Sandalwood"]},{"brand":"Vince Camuto","name":"Bella","launched":"2014","gender":"Women","family":"","type":"Edp","top":["Bergamot"],"mid":["Nectarine Blossom","Jasmine Water"],"base":["White Amber"]},{"brand":"Vince Camuto","name":"Bella Notte","launched":"2023","gender":"Women","family":"","type":"Edp","top":["Blackberry","Black Currant","Pear"],"mid":["Orange","Rose","Orris"],"base":["Patchouli","Caramel","Sandalwood"]},{"brand":"Vince Camuto","name":"Illuminaire","launched":"2019","gender":"Women","family":"","type":"Edp","top":["Pomelo","Plum Blossom","Bergamot"],"mid":["Osmanthus","Magnolia","Red Rose"],"base":["Suede","Musk","Cedar","Tonka Bean"]},{"brand":"Vince Camuto","name":"Illuminaire Intensa","launched":"2021","gender":"Women","family":"","type":"Edp","top":["Plum","Bergamot","Pink Pepper"],"mid":["Plum Blossom","Orchid","Rose","Iris"],"base":["Vanilla","Musk","Sandalwood","Amber"]},{"brand":"Calvin Klein","name":"Euphoria Solar Elixir","gender":"Women","type":"Elixir","family":"Oriental Floral","launched":"2026","top":["Mango"],"mid":["Golden Orchid"],"base":["Vanilla Extract","Cedarwood Essence"]},{"brand":"Calvin Klein","name":"Euphoria Bold Elixir","gender":"Women","type":"Elixir","family":"Oriental Floral","launched":"20216","top":["Jasmine Absolute"],"mid":["Smokey Orchid"],"base":["Vanilla Extract","Oakwood Extract"]},{"brand":"Calvin Klein","name":"Euphoria Magnetic Elixir","gender":"Women","type":"Elixir","family":"Oriental Floral","launched":"2026","top":["Ambrette Absolute"],"mid":["Dancing Orchid"],"base":["Vanilla Extract","Musks"]},{"brand":"Calvin Klein","name":"Euphoria Bold Elixir","gender":"Women","type":"Elixir","family":"Oriental Floral","launched":"2026","top":["Jasmine"],"mid":["Orchid"],"base":["Vanilla","Oak"]},{"brand":"Calvin Klein","name":"Euphoria Magnetic Elixir","gender":"Women","type":"Elixir","family":"Oriental Floral","launched":"2026","top":["Ambrette Absolute"],"mid":["Orchid"],"base":["Vanilla","Musk"]}];
+let db = [];
+const PAGE_SIZE = 20;
+let visibleCount = PAGE_SIZE;
+let filtered = [];
+let activeFilters = { gender: 'all', type: 'all' };
+let searchQuery = '';
+let currentMode = 'browse';
+let activeLayer = 'top';
+let selectedNote = null;
+let expandedId = null;
+
+// ── Collect all notes ──────────────────────────────────────────────────────
+function getAllNotes(layer) {
+  const set = new Set();
+  db.forEach(f => (f[layer] || []).forEach(n => n && set.add(n)));
+  return [...set].sort();
+}
+
+const allNotes = { top: getAllNotes('top'), mid: getAllNotes('mid'), base: getAllNotes('base') };
+
+// ── Mode Switching ─────────────────────────────────────────────────────────
+function switchMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + mode).classList.add('active');
+
+  const browseCtrl = document.getElementById('browse-controls');
+  const notePanel = document.getElementById('notePanel');
+  const resultsArea = document.getElementById('resultsArea');
+  const addForm = document.getElementById('addForm');
+
+  browseCtrl.style.display = mode === 'browse' ? '' : 'none';
+  notePanel.classList.toggle('hidden', mode !== 'notes');
+  resultsArea.style.display = mode !== 'add' ? '' : 'none';
+  addForm.classList.toggle('visible', mode === 'add');
+
+  if (mode === 'browse') { applyFilters(); }
+  if (mode === 'notes') { selectedNote = null; renderNoteChips(''); applyFilters(); }
+}
+
+// ── Search ────────────────────────────────────────────────────────────────
+function onSearch(val) {
+  searchQuery = val.trim().toLowerCase();
+  document.getElementById('searchClear').classList.toggle('visible', val.length > 0);
+  applyFilters();
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  onSearch('');
+}
+
+// ── Filters ───────────────────────────────────────────────────────────────
+function toggleFilter(type, val, el) {
+  activeFilters[type] = val;
+  const row = type === 'gender' ? document.getElementById('genderFilters') : document.getElementById('typeFilters');
+  row.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+
+// ── Apply Filters ─────────────────────────────────────────────────────────
+function applyFilters() {
+  visibleCount = PAGE_SIZE;
+  filtered = db.filter(f => {
+    // Gender
+    if (activeFilters.gender !== 'all' && f.gender !== activeFilters.gender) return false;
+    // Type (exact match, case insensitive)
+    if (activeFilters.type !== 'all') {
+      const ft = (f.type || '').trim().toLowerCase().replace(/\s+/g, ' ');
+      const at = activeFilters.type.toLowerCase();
+      if (ft !== at) return false;
+    }
+    // Note filter (notes mode)
+    if (currentMode === 'notes') {
+      const typedVal = document.getElementById('noteSearchInput').value.trim().toLowerCase();
+      if (selectedNote) {
+        // Chip tapped — exact note, exact layer
+        if (!(f[activeLayer]||[]).some(n => n.toLowerCase() === selectedNote.toLowerCase())) return false;
+      } else if (typedVal) {
+        // Typing but no chip selected — contains match in active layer only
+        if (!(f[activeLayer]||[]).some(n => n.toLowerCase().includes(typedVal))) return false;
+      }
+    }
+    // Search
+    if (searchQuery) {
+      const haystack = [f.brand, f.name, f.family, ...(f.top||[]), ...(f.mid||[]), ...(f.base||[])]
+        .join(' ').toLowerCase();
+      if (!haystack.includes(searchQuery)) return false;
+    }
+    return true;
+  });
+
+  renderCards();
+}
+
+// ── Render Cards ──────────────────────────────────────────────────────────
+
+function renderCards() {
+  const list = document.getElementById('cardList');
+  const info = document.getElementById('resultsInfo');
+  const empty = document.getElementById('emptyState');
+  const badge = document.getElementById('countBadge');
+  const btn = document.getElementById('loadMoreBtn');
+
+  badge.textContent = filtered.length + ' fragrance' + (filtered.length !== 1 ? 's' : '');
+
+  if (filtered.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    info.textContent = '';
+    btn.style.display = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  info.textContent = `Showing ${Math.min(visibleCount, filtered.length)} of ${filtered.length}`;
+
+  list.innerHTML = filtered.slice(0, visibleCount).map(f => buildCard(f)).join('');
+
+  if (filtered.length > visibleCount) {
+    btn.style.display = 'block';
+    btn.textContent = `Load More (${filtered.length - visibleCount} remaining)`;
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+function loadMore() {
+  visibleCount += PAGE_SIZE;
+  renderCards();
+}
+
+function buildCard(f) {
+  const isExp = expandedId === f.id;
+  const gTag = f.gender ? `<span class="tag tag-gender-${f.gender.toLowerCase()}">${f.gender}</span>` : '';
+  const tTag = f.type ? `<span class="tag tag-type">${f.type}</span>` : '';
+  const famTag = f.family ? `<span class="tag">${f.family}</span>` : '';
+
+  const highlight = (note) => {
+    if (!searchQuery && !selectedNote) return note;
+    const q = selectedNote ? selectedNote.toLowerCase() : searchQuery;
+    if (note.toLowerCase().includes(q)) return `<span class="note-item highlight">${note}</span>`;
+    return `<span class="note-item">${note}</span>`;
+  };
+
+  const noteItems = (arr) => (arr||[]).map(n => highlight(n)).join('<br>') || '<span style="opacity:0.3;font-size:11px">—</span>';
+
+  const notesHtml = isExp ? `
+    <div class="card-notes">
+      <div class="notes-grid">
+        <div class="note-group">
+          <div class="note-group-label top">Top</div>
+          ${noteItems(f.top)}
+        </div>
+        <div class="note-group">
+          <div class="note-group-label mid">Mid</div>
+          ${noteItems(f.mid)}
+        </div>
+        <div class="note-group">
+          <div class="note-group-label base">Base</div>
+          ${noteItems(f.base)}
+        </div>
+      </div>
+      ${f.launched || f.family ? `<div class="card-meta">
+        ${f.launched ? `<div class="meta-item">Year <span>${f.launched}</span></div>` : ''}
+        ${f.family ? `<div class="meta-item">Family <span>${f.family}</span></div>` : ''}
+      </div>` : ''}
+    </div>` : '';
+
+  return `<div class="card ${isExp ? 'expanded' : ''}" onclick="toggleCard(${f.id})">
+    <div class="card-header">
+      <div class="card-main">
+        <div class="card-brand">${f.brand}</div>
+        <div class="card-name">${f.name}</div>
+        <div class="card-tags">${gTag}${tTag}${famTag}</div>
+      </div>
+      <div class="card-chevron">▼</div>
+    </div>
+    ${notesHtml}
+  </div>`;
+}
+
+function toggleCard(id) {
+  expandedId = expandedId === id ? null : id;
+  renderCards();
+  if (expandedId !== null) {
+    // Scroll card into view
+    setTimeout(() => {
+      const cards = document.querySelectorAll('.card');
+      const idx = filtered.findIndex(f => f.id === id);
+      if (cards[idx]) cards[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 50);
+  }
+}
+
+// ── Notes Panel ───────────────────────────────────────────────────────────
+function setLayer(layer) {
+  activeLayer = layer;
+  document.getElementById('ltTop').className = 'layer-tab' + (layer === 'top' ? ' active-top' : '');
+  document.getElementById('ltMid').className = 'layer-tab' + (layer === 'mid' ? ' active-mid' : '');
+  document.getElementById('ltBase').className = 'layer-tab' + (layer === 'base' ? ' active-base' : '');
+  document.getElementById('noteSearchInput').value = '';
+  selectedNote = null;
+  renderNoteChips('');
+  applyFilters();
+}
+
+function onNoteSearchInput(val) {
+  selectedNote = null;
+  renderNoteChips(val);
+  applyFilters();
+}
+
+function renderNoteChips(filter) {
+  const q = filter.trim().toLowerCase();
+  // Always show chips from the active layer only
+  const notes = allNotes[activeLayer].filter(n => !q || n.toLowerCase().includes(q));
+  const container = document.getElementById('noteSuggestions');
+  container.innerHTML = notes.length
+    ? notes.map(n =>
+        `<div class="note-chip ${selectedNote === n ? 'selected' : ''}" onclick="selectNote('${n.replace(/'/g,"\\'")}')">
+          ${n}
+        </div>`
+      ).join('')
+    : '<span style="color:var(--muted);font-size:12px;font-style:italic">No notes found</span>';
+}
+
+function selectNote(note) {
+  selectedNote = selectedNote === note ? null : note;
+  renderNoteChips(document.getElementById('noteSearchInput').value);
+  applyFilters();
+}
+
+// ── Add Fragrance ─────────────────────────────────────────────────────────
+function saveFragrance() {
+  const brand = document.getElementById('fBrand').value.trim();
+  const name = document.getElementById('fName').value.trim();
+  if (!brand || !name) { showToast('⚠️ Brand and Name required'); return; }
+
+  const parseNotes = (id) => {
+    const val = document.getElementById(id).value.trim();
+    return val ? val.split(',').map(n => n.trim()).filter(Boolean) : [];
+  };
+
+  const entry = {
+    brand,
+    name,
+    gender: document.getElementById('fGender').value,
+    type: document.getElementById('fType').value,
+    family: document.getElementById('fFamily').value.trim(),
+    launched: document.getElementById('fLaunched').value.trim(),
+    top: parseNotes('fTop'),
+    mid: parseNotes('fMid'),
+    base: parseNotes('fBase')
+  };
+
+  // Save to localStorage
+  const saved = getSavedFragrances();
+  saved.push(entry);
+  localStorage.setItem('kitty_additions', JSON.stringify(saved));
+
+  // Add to live db
+  rebuildDb();
+
+  // Clear form
+  ['fBrand','fName','fFamily','fLaunched','fTop','fMid','fBase'].forEach(id => document.getElementById(id).value = '');
+
+  showToast(`✅ Saved: ${name} by ${brand}`);
+}
+
+function getSavedFragrances() {
+  try { return JSON.parse(localStorage.getItem('kitty_additions') || '[]'); }
+  catch { return []; }
+}
+
+function rebuildDb() {
+  const saved = getSavedFragrances();
+  const combined = [...RAW_DATA, ...saved];
+  db = combined.map((f, i) => ({ ...f, id: i }));
+  allNotes.top = getAllNotes('top');
+  allNotes.mid = getAllNotes('mid');
+  allNotes.base = getAllNotes('base');
+}
+
+// ── Export ────────────────────────────────────────────────────────────────
+function exportApp() {
+  const saved = getSavedFragrances();
+  if (saved.length === 0) {
+    showToast('No new additions to export');
+    return;
+  }
+
+  // Get current HTML, replace RAW_DATA with combined dataset
+  const combined = [...RAW_DATA, ...saved];
+  const currentHTML = document.documentElement.outerHTML;
+  const newHTML = currentHTML.replace(
+    /const RAW_DATA = \[[\s\S]*?\];/,
+    'const RAW_DATA = ' + JSON.stringify(combined) + ';'
+  );
+
+  const blob = new Blob([newHTML], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'kitty_fragrances.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`✅ Exported with ${saved.length} new addition${saved.length !== 1 ? 's' : ''}`);
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+rebuildDb();
+switchMode('browse');
+renderNoteChips('');
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js');
+  });
+}
+</script>
+
+
+</body></html>
